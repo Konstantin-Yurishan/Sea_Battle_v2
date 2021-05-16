@@ -90,12 +90,16 @@ void makeShoot(playerField*, playerField*);
 bool shootChecker(playerField*, int, int);
 //void game(); //входят функции intro, mainMenu
 void mainMenu(playerField*, playerField*);
+void consoleSize(); //задаёт размер окна
+bool terminator_1(playerField*);
+bool terminator_2(playerField*);
 
 
 int main()
 {
 
 	srand(time(NULL));
+	consoleSize();
 
 	playerField field_1 = createPlayerField();
 	playerField* field_1_ptr = &field_1;
@@ -110,7 +114,7 @@ int main()
 	//fillFieldAutomatic(field_2_ptr);
 	//showField(field);
 	//fillFieldManual(field_1_ptr);
-	
+
 	//makeShoot(field_1_ptr, field_2_ptr);
 
 	return 0;
@@ -591,7 +595,7 @@ void showFields(playerField* field1, playerField* field2)
 			else {
 				std::cout << field1->field[i][c] << " ";
 			}
-			
+
 		}
 
 		std::cout << "\t\t";
@@ -603,7 +607,7 @@ void showFields(playerField* field1, playerField* field2)
 				std::cout << mist << " ";
 			}
 			else {
-				std::cout << field2->field[i][c] << " "; 
+				std::cout << field2->field[i][c] << " ";
 			}
 		}
 
@@ -640,7 +644,7 @@ void fillFieldManual(playerField* field)
 	shipNum = 0;
 	coordX = 0;
 	coordY = 0;
-
+	std::cout << "Place the ship" << field->playerName << std::endl;
 	showField(*field);
 	setCursorPos(0, 0);
 	std::cout << "*";
@@ -1503,113 +1507,158 @@ void mainMenu(playerField* field_1, playerField* field_2)
 
 	char choose;
 	bool exit = true;
-	bool bback = true;
 
 	while (exit) {
 
 		system("CLS");
 
-		std::cout << "1. New game." << std::endl;
-		std::cout << "0. Exit." << std::endl;
+		std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. New game." << std::endl;
+		std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 
 		choose = _getch();
-		//тестовый возврат
-		bback = true;
-		while (exit && bback) {
+
+
 			switch (choose) {
-			case '1':
+				case '1':
 
-				system("CLS");
+					system("CLS");
 
-				std::cout << "1. Player vs player." << std::endl;
-				std::cout << "2. Player vs PC." << std::endl;
-				std::cout << "3. PC vs PC." << std::endl;
-				std::cout << "9. Back." << std::endl;
-				std::cout << "0. Exit." << std::endl;
-
-				choose = _getch();
-
-				switch (choose) {
-				case '1':	//игрок против игрока
-					std::cout << "1. Arrange ships manually." << std::endl;
-					std::cout << "2. Arrange ships automatically." << std::endl;
-					std::cout << "3. Enter the names." << std::endl;  //ручной ввод имён игроков, в противном случае будут просто player1 и player2
-					std::cout << "0. Exit." << std::endl;
+					std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Player vs player." << std::endl;
+					std::cout << "\t\t\t\t\t2. Player vs PC." << std::endl;
+					std::cout << "\t\t\t\t\t3. PC vs PC." << std::endl;
+					std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 
 					choose = _getch();
 
-					switch (choose) {
-					case '1':
-						//функция для ручного расставления кораблей для игрока 1
-						fillFieldManual(field_1);
-						//функция для ручного расставления кораблей для игрока 2
-						fillFieldManual(field_2);
-						showFields(field_1, field_2);
-						system("pause"); // пауза для теста показа полей, убрать потом
-						//запуск игры с переданными полями
-						break;
-					case '2':
-						//функция для автоматического расставления кораблей для игрока 1
-						fillFieldAutomatic(field_1);
-						//функция для автоматического расставления кораблей для игрока 2
-						fillFieldAutomatic(field_2);
-						showFields(field_1, field_2);
-						system("pause"); // пауза для теста показа полей, убрать потом
-						//запуск игры с переданными полями
-						break;
-					case '0':
-						exit = false;
-						break;
-					default:
-						break;
-					}
-					break;
-				case '2':	//игрок против PC
-					std::cout << "1. Arrange ships manually." << std::endl;
-					std::cout << "2. Arrange ships automatically." << std::endl;
-					std::cout << "0. Exit." << std::endl;
+						switch (choose) {
+							case '1':	//игрок против игрока
 
-					choose = _getch();
+								system("CLS");
 
-					switch (choose) {
-					case '1':
-						//функция для ручного расставления кораблей для игрока 1
-						//функция для автоматического расставления кораблей для PC
-						//запуск игры с переданными полями
-						break;
-					case '2':
-						//функция для автоматического расставления кораблей для игрока 1
-						//функция для автоматического расставления кораблей для PC
-						//запуск игры с переданными полями
-						break;
-					case '0':
-						exit = false;
-						break;
-					default:
-						break;
-					}
-					break;
-				case '3':	//PC vs PC
-					//запуск функций на автоматаческое заполнение полей
-					//запуск функции на начало игры PC vs PC
-					break;
-				case '9':
-					bback = false;
+								std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
+								std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
+								std::cout << "\t\t\t\t\t3. Enter the names." << std::endl;  //ручной ввод имён игроков, в противном случае будут просто player1 и player2
+
+								std::cout << "\t\t\t\t\t0. Exit." << std::endl;
+
+								choose = _getch();
+
+									switch (choose) {
+									case '1':
+										//функция для ручного расставления кораблей для игрока 1
+										fillFieldManual(field_1);
+										//функция для ручного расставления кораблей для игрока 2
+										fillFieldManual(field_2);
+										showFields(field_1, field_2);
+										system("pause"); // пауза для теста показа полей, убрать потом
+										//запуск игры с переданными полями
+										break;
+									case '2':
+										//функция для автоматического расставления кораблей для игрока 1
+										fillFieldAutomatic(field_1);
+										//функция для автоматического расставления кораблей для игрока 2
+										fillFieldAutomatic(field_2);
+										showFields(field_1, field_2);
+										system("pause"); // пауза для теста показа полей, убрать потом
+										//запуск игры с переданными полями
+										break;
+									case '0':
+										exit = false;
+										break;
+									default:
+										break;
+									}
+								
+							break;
+							case '2':	//игрок против PC
+								std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
+								std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
+								std::cout << "\t\t\t\t\t0. Exit." << std::endl;
+
+								choose = _getch();
+
+								switch (choose) {
+									case '1':
+										//функция для ручного расставления кораблей для игрока 1
+										//функция для автоматического расставления кораблей для PC
+										//запуск игры с переданными полями
+										break;
+									case '2':
+										//функция для автоматического расставления кораблей для игрока 1
+										//функция для автоматического расставления кораблей для PC
+										//запуск игры с переданными полями
+										break;
+									case '0':
+										exit = false;
+										break;
+									default:
+										break;
+									}
+								break;
+							case '3':	//PC vs PC
+								//запуск функций на автоматаческое заполнение полей
+								//запуск функции на начало игры PC vs PC
+								break;
+							case '0':
+								exit = false;
+								break;
+							default:
+								break;
+							}
+						
 					break;
 				case '0':
 					exit = false;
 					break;
 				default:
+					std::cout << "Something wrong." << std::endl; //в принципе будет бесполезен, если программа будет реагировать только на приавильные нажатия, игнорируя неправильные, но пока пусть будет
 					break;
-				}
-				break;
-			case '0':
-				exit = false;
-				break;
-			default:
-				std::cout << "Something wrong." << std::endl; //в принципе будет бесполезен, если программа будет реагировать только на приавильные нажатия, игнорируя неправильные, но пока пусть будет
-				break;
 			}
-		}
+		
 	}
 }
+
+void consoleSize()
+{
+	CONSOLE_SCREEN_BUFFER_INFOEX consolesize;
+
+	consolesize.cbSize = sizeof(consolesize);
+
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	GetConsoleScreenBufferInfoEx(hConsole, &consolesize);
+
+	COORD c;
+	c.X = 100;
+	c.Y = 30;
+	consolesize.dwSize = c;
+
+	consolesize.srWindow.Left = 0;
+	consolesize.srWindow.Right = 100;
+	consolesize.srWindow.Top = 0;
+	consolesize.srWindow.Bottom = 30;
+
+	SetConsoleScreenBufferInfoEx(hConsole, &consolesize);
+}
+//рандомно ищёт корабли на поле, возвращает true в случае удачного выстрела
+bool terminator_1(playerField* field){
+
+	while (true) {
+		int x = rand() % 10;
+		int y = rand() % 10;
+
+		if (field->field[x][y] == '~') {
+			field->field[x][y] = '0';
+			std::cout << "Miss!";
+			return false;
+		}
+		else if (field->field[x][y] == '#') {
+			field->field[x][y] = 'X';
+			std::cout << "Hit!";
+			return true;
+		}
+
+	}
+}
+//"умный" бот, , возвращает true в случае удачного выстрела
+bool terminator_2(playerField*){}

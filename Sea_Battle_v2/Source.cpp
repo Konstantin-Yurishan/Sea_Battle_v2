@@ -1,13 +1,16 @@
-﻿/*Первостепенное*/
+﻿/*/*Первостепенное*/
 //заполнение поля двумя игроками
-//для каждого игрока в его очередь отображается его поле, и поле противника с туманом войны + специальные кнопки для досрочного завершения игры
-//красивое оформление полей 
+//для каждого игрока в его очередь отображается его поле, и поле противника с туманом войны
+//красивое оформление полей - добавление цветов, разметки
 //навигация по чужому полю для выстрела
 //произведение выстрела и его последствия, вывод сообщений о попаданиях и промахах
 //произведение выстрела противником с лёгким ии
 //кондиции завершения игры
 //произведение выстрела противником с сложным ии
+//специальные кнопки для досрочного завершения игры и выхода в главное меню
 //разборка с освобождением памяти
+//вычищение мусора из кода и комментирование
+//оптимизация и сокращение кода
 
 /*второстепенное*/
 //	интро
@@ -32,11 +35,16 @@
 //	интерфейс
 //вывод статистики во время игры - оставшееся количество кораблей у себя, у противника, количество целых, подбитых
 //кнопки для выхода и кнопка назад 
+//ограничение на длину имени игрока
 //
 //	сохранение и загрузка
 // реализация возможности сохранения и загрузки  
+// 
+//	разное
+//передача всего и вся по указателю
 //
-
+//
+/**/
 
 
 #include <iostream>
@@ -77,11 +85,11 @@ bool checkArea(playerField*, int, int); //проверяет окресност�
 void fillFieldAutomatic(playerField*);
 void fillFieldManual(playerField*);
 void showField(playerField);
-void showFields(playerField, playerField);
+void showFields(playerField*, playerField*);
 void makeShoot(playerField*, playerField*);
 bool shootChecker(playerField*, int, int);
-void game(); //входят функции intro, mainMenu
-void mainMenu();
+//void game(); //входят функции intro, mainMenu
+void mainMenu(playerField*, playerField*);
 
 
 int main()
@@ -95,15 +103,14 @@ int main()
 	playerField* field_2_ptr = &field_2;
 
 
-	mainMenu();
-
-
+	mainMenu(field_1_ptr, field_2_ptr);
+	showFields(field_1_ptr, field_2_ptr);
 
 	//fillFieldAutomatic(field_1_ptr);
 	//fillFieldAutomatic(field_2_ptr);
 	//showField(field);
 	//fillFieldManual(field_1_ptr);
-	//showFields(field_1, field_2);
+	
 	//makeShoot(field_1_ptr, field_2_ptr);
 
 	return 0;
@@ -146,6 +153,7 @@ bool checkArea(playerField* field, int X, int Y)
 
 void fillFieldAutomatic(playerField* field)
 {
+	system("CLS");
 
 	int coordX, coordY, dir, shipNum;
 
@@ -550,7 +558,7 @@ void setCursorPos(int y, int x)
 	SetConsoleCursorPosition(output, pos);
 }
 
-void showFields(playerField field1, playerField field2)
+void showFields(playerField* field1, playerField* field2)
 {
 
 	//сами поля
@@ -558,7 +566,14 @@ void showFields(playerField field1, playerField field2)
 	//статистика по кораблям внизу
 	//имена игроков над полями
 	//"вызов" прицела попробовать вызвать изменение позиции курсора отдельной функцией и тд и тп
+	//sea - 177, ships - 254, destr - 206, miss - 153
+	char sea = 176;
+	char ship = 254;
+	char destr = 206;
+	char miss = 153;
+	char mist = 178;
 
+	std::cout << field1->playerName << "\t\t\t\t" << field2->playerName << std::endl;
 	std::cout << "   A B C D E F G H I J \t\t   A B C D E F G H I J " << std::endl;
 
 	for (int i = 0; i < 10; i++) {
@@ -567,35 +582,44 @@ void showFields(playerField field1, playerField field2)
 
 
 		for (int c = 0; c < 10; c++) {
-			std::cout << field1.field[i][c] << " ";
+			if (field1->field[i][c] == '~') {
+				std::cout << sea << " ";
+			}
+			else if (field1->field[i][c] == '#') {
+				std::cout << ship << " ";
+			}
+			else {
+				std::cout << field1->field[i][c] << " ";
+			}
+			
 		}
 
 		std::cout << "\t\t";
-
 		i != 9 ? std::cout << " " << i + 1 << " " : std::cout << i + 1 << " ";
 
 		for (int c = 0; c < 10; c++) {
-			std::cout << field2.field[i][c] << " ";
+
+			if (field2->field[i][c] == '~' || field2->field[i][c] == '#') {
+				std::cout << mist << " ";
+			}
+			else {
+				std::cout << field2->field[i][c] << " "; 
+			}
 		}
 
 		std::cout << std::endl;
 	}
 
-
 	std::cout << std::endl;
 	std::cout << "   Remaining ships: \t\t   Remaining ships: " << std::endl;
-	std::cout << " Single-deck - " << field1.ship1[0].genStat + field1.ship1[1].genStat + field1.ship1[2].genStat + field1.ship1[3].genStat;
-	std::cout << "\t\t Single-deck - " << field2.ship1[0].genStat + field2.ship1[1].genStat + field2.ship1[2].genStat + field2.ship1[3].genStat << std::endl;
-	std::cout << " Double-deck - " << field1.ship2[0].genStat + field1.ship2[1].genStat + field1.ship2[2].genStat;
-	std::cout << "\t\t Double-deck - " << field2.ship2[0].genStat + field2.ship2[1].genStat + field2.ship2[2].genStat << std::endl;
-	std::cout << " Three-deck - " << field1.ship3[0].genStat + field1.ship3[1].genStat;
-	std::cout << "\t\t\t Three-deck - " << field2.ship3[0].genStat + field2.ship3[1].genStat << std::endl;
-	std::cout << " Four-deck - " << field1.ship4[0].genStat;
-	std::cout << "\t\t\t Four-deck - " << field2.ship4[0].genStat << std::endl;
-
-
-
-
+	std::cout << " Single-deck - " << field1->ship1[0].genStat + field1->ship1[1].genStat + field1->ship1[2].genStat + field1->ship1[3].genStat;
+	std::cout << "\t\t Single-deck - " << field2->ship1[0].genStat + field2->ship1[1].genStat + field2->ship1[2].genStat + field2->ship1[3].genStat << std::endl;
+	std::cout << " Double-deck - " << field1->ship2[0].genStat + field1->ship2[1].genStat + field1->ship2[2].genStat;
+	std::cout << "\t\t Double-deck - " << field2->ship2[0].genStat + field2->ship2[1].genStat + field2->ship2[2].genStat << std::endl;
+	std::cout << " Three-deck - " << field1->ship3[0].genStat + field1->ship3[1].genStat;
+	std::cout << "\t\t\t Three-deck - " << field2->ship3[0].genStat + field2->ship3[1].genStat << std::endl;
+	std::cout << " Four-deck - " << field1->ship4[0].genStat;
+	std::cout << "\t\t\t Four-deck - " << field2->ship4[0].genStat << std::endl;
 
 }
 
@@ -603,6 +627,7 @@ void statistic() {}
 
 void fillFieldManual(playerField* field)
 {
+	system("CLS");
 
 	int coordX, coordY, shipNum, coordX2, coordY2, coordX3, coordY3, coordX4, coordY4;
 	char** tempField = field->field;
@@ -1367,7 +1392,7 @@ void makeShoot(playerField* field1, playerField* field2)
 
 
 
-	showFields(*field1, *field2);
+	showFields(field1, field2);
 	setCursorPos(coordX, coordY);
 	std::cout << '*';
 	while (true) {
@@ -1379,7 +1404,7 @@ void makeShoot(playerField* field1, playerField* field2)
 			if (coordX > modX) {
 				coordX -= 1;
 			}
-			showFields(*field1, *field2);
+			showFields(field1, field2);
 			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 0);
@@ -1390,7 +1415,7 @@ void makeShoot(playerField* field1, playerField* field2)
 			if (coordX < modX + 9) {
 				coordX += 1;
 			}
-			showFields(*field1, *field2);
+			showFields(field1, field2);
 			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 0);
@@ -1401,7 +1426,7 @@ void makeShoot(playerField* field1, playerField* field2)
 			if (coordY < modY + 18) {
 				coordY += 2;
 			}
-			showFields(*field1, *field2);
+			showFields(field1, field2);
 			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 0);
@@ -1412,7 +1437,7 @@ void makeShoot(playerField* field1, playerField* field2)
 			if (coordY > modY) {
 				coordY -= 2;
 			}
-			showFields(*field1, *field2);
+			showFields(field1, field2);
 			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 0);
@@ -1428,15 +1453,10 @@ void makeShoot(playerField* field1, playerField* field2)
 bool shootChecker(playerField* field, int x, int y)
 {
 
-
 	std::cout << field->ship1[0].decCoord[0][0] << " " << field->ship1[0].decCoord[0][1] << std::endl;
 	std::cout << field->ship1[1].decCoord[0][0] << " " << field->ship1[1].decCoord[0][1] << std::endl;
 	std::cout << field->ship1[2].decCoord[0][0] << " " << field->ship1[2].decCoord[0][1] << std::endl;
 	std::cout << field->ship1[3].decCoord[0][0] << " " << field->ship1[3].decCoord[0][1] << std::endl;
-
-
-
-
 
 	if (field->field[x][y] == '#') {
 
@@ -1472,10 +1492,14 @@ bool shootChecker(playerField* field, int x, int y)
 	}
 
 
+
 }
 
-void mainMenu()
+void mainMenu(playerField* field_1, playerField* field_2)
 {
+	field_1->playerName = "Player1";
+	field_2->playerName = "Player2";
+
 
 	char choose;
 	bool exit = true;
@@ -1509,6 +1533,7 @@ void mainMenu()
 				case '1':	//игрок против игрока
 					std::cout << "1. Arrange ships manually." << std::endl;
 					std::cout << "2. Arrange ships automatically." << std::endl;
+					std::cout << "3. Enter the names." << std::endl;  //ручной ввод имён игроков, в противном случае будут просто player1 и player2
 					std::cout << "0. Exit." << std::endl;
 
 					choose = _getch();
@@ -1516,12 +1541,20 @@ void mainMenu()
 					switch (choose) {
 					case '1':
 						//функция для ручного расставления кораблей для игрока 1
+						fillFieldManual(field_1);
 						//функция для ручного расставления кораблей для игрока 2
+						fillFieldManual(field_2);
+						showFields(field_1, field_2);
+						system("pause"); // пауза для теста показа полей, убрать потом
 						//запуск игры с переданными полями
 						break;
 					case '2':
 						//функция для автоматического расставления кораблей для игрока 1
+						fillFieldAutomatic(field_1);
 						//функция для автоматического расставления кораблей для игрока 2
+						fillFieldAutomatic(field_2);
+						showFields(field_1, field_2);
+						system("pause"); // пауза для теста показа полей, убрать потом
 						//запуск игры с переданными полями
 						break;
 					case '0':
@@ -1530,7 +1563,6 @@ void mainMenu()
 					default:
 						break;
 					}
-
 					break;
 				case '2':	//игрок против PC
 					std::cout << "1. Arrange ships manually." << std::endl;
@@ -1570,7 +1602,6 @@ void mainMenu()
 				default:
 					break;
 				}
-
 				break;
 			case '0':
 				exit = false;
@@ -1580,7 +1611,5 @@ void mainMenu()
 				break;
 			}
 		}
-
 	}
-
 }

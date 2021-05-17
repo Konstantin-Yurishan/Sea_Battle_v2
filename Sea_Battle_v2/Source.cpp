@@ -85,6 +85,7 @@ bool checkArea(playerField*, int, int); //проверяет окресност�
 void fillFieldAutomatic(playerField*);
 void fillFieldManual(playerField*);
 void showField(playerField);
+void setCursorPos(int, int);
 void showFields(playerField*, playerField*);
 void makeShoot(playerField*, playerField*);
 bool shootChecker(playerField*, int, int);
@@ -93,6 +94,10 @@ void mainMenu(playerField*, playerField*);
 void consoleSize(); //задаёт размер окна
 bool terminator_1(playerField*);
 bool terminator_2(playerField*);
+void startGame(playerField*, playerField*);
+bool shooter(playerField*, playerField*); //представляем навигацию по вражескому полю
+bool winChecker(playerField*, playerField*);
+void accountant(playerField*, int, int); // запись информации по выстрелу
 
 
 int main()
@@ -100,6 +105,14 @@ int main()
 
 	srand(time(NULL));
 	consoleSize();
+
+	//скрывает мигающий курсор
+	void* handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO structCursorInfo;
+	GetConsoleCursorInfo(handle, &structCursorInfo);
+	structCursorInfo.bVisible = FALSE;
+	SetConsoleCursorInfo(handle, &structCursorInfo);
+
 
 	playerField field_1 = createPlayerField();
 	playerField* field_1_ptr = &field_1;
@@ -155,480 +168,6 @@ bool checkArea(playerField* field, int X, int Y)
 	return true;
 }
 
-void fillFieldAutomatic(playerField* field)
-{
-	system("CLS");
-
-	int coordX, coordY, dir, shipNum;
-
-	//однопалубные
-
-	shipNum = 0;
-
-	while (shipNum < 4) {
-
-		coordX = rand() % 10;
-		coordY = rand() % 10;
-
-		if (checkArea(field, coordX, coordY)) {
-			field->field[coordX][coordY] = '#';
-
-			field->ship1[shipNum].size = 1;
-			field->ship1[shipNum].decCoord = new int* [1];
-			field->ship1[shipNum].decCoord[0] = new int[2];
-			field->ship1[shipNum].decCoord[0][0] = coordX;
-			field->ship1[shipNum].decCoord[0][1] = coordY;
-			field->ship1[shipNum].decStat = new bool[1];
-			field->ship1[shipNum].decStat[0] = true;
-			field->ship1[shipNum].genStat = 1;
-			shipNum++;
-		}
-	}
-
-	//двупалубные
-
-	shipNum = 0;
-
-	while (shipNum < 3) {
-
-		coordX = rand() % 10;
-		coordY = rand() % 10;
-		dir = rand() % 4;
-
-		if ((coordX == 0 && dir == 0) || (coordY == 0 && dir == 2) || (coordX == 9 && dir == 1) || (coordY == 9 && dir == 3)) {
-			continue;
-		}
-
-		if (checkArea(field, coordX, coordY)) {
-			if (dir == 0) {
-				if (checkArea(field, coordX - 1, coordY)) {
-					field->field[coordX - 1][coordY] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship2[shipNum].size = 2;
-					field->ship2[shipNum].decCoord = new int* [2];
-					field->ship2[shipNum].decCoord[0] = new int[2];
-					field->ship2[shipNum].decCoord[1] = new int[2];
-					field->ship2[shipNum].decCoord[0][0] = coordX - 1;
-					field->ship2[shipNum].decCoord[0][1] = coordY;
-					field->ship2[shipNum].decCoord[1][0] = coordX;
-					field->ship2[shipNum].decCoord[1][1] = coordY;
-					field->ship2[shipNum].decStat = new bool[2];
-					field->ship2[shipNum].decStat[0] = true;
-					field->ship2[shipNum].decStat[1] = true;
-					field->ship2[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else if (dir == 1) {
-				if (checkArea(field, coordX + 1, coordY)) {
-					field->field[coordX + 1][coordY] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship2[shipNum].size = 2;
-					field->ship2[shipNum].decCoord = new int* [2];
-					field->ship2[shipNum].decCoord[0] = new int[2];
-					field->ship2[shipNum].decCoord[1] = new int[2];
-					field->ship2[shipNum].decCoord[0][0] = coordX + 1;
-					field->ship2[shipNum].decCoord[0][1] = coordY;
-					field->ship2[shipNum].decCoord[1][0] = coordX;
-					field->ship2[shipNum].decCoord[1][1] = coordY;
-					field->ship2[shipNum].decStat = new bool[2];
-					field->ship2[shipNum].decStat[0] = true;
-					field->ship2[shipNum].decStat[1] = true;
-					field->ship2[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else if (dir == 2) {
-				if (checkArea(field, coordX, coordY - 1)) {
-					field->field[coordX][coordY - 1] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship2[shipNum].size = 2;
-					field->ship2[shipNum].decCoord = new int* [2];
-					field->ship2[shipNum].decCoord[0] = new int[2];
-					field->ship2[shipNum].decCoord[1] = new int[2];
-					field->ship2[shipNum].decCoord[0][0] = coordX;
-					field->ship2[shipNum].decCoord[0][1] = coordY - 1;
-					field->ship2[shipNum].decCoord[1][0] = coordX;
-					field->ship2[shipNum].decCoord[1][1] = coordY;
-					field->ship2[shipNum].decStat = new bool[2];
-					field->ship2[shipNum].decStat[0] = true;
-					field->ship2[shipNum].decStat[1] = true;
-					field->ship2[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else {
-				if (checkArea(field, coordX, coordY + 1)) {
-					field->field[coordX][coordY + 1] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship2[shipNum].size = 2;
-					field->ship2[shipNum].decCoord = new int* [2];
-					field->ship2[shipNum].decCoord[0] = new int[2];
-					field->ship2[shipNum].decCoord[1] = new int[2];
-					field->ship2[shipNum].decCoord[0][0] = coordX;
-					field->ship2[shipNum].decCoord[0][1] = coordY + 1;
-					field->ship2[shipNum].decCoord[1][0] = coordX;
-					field->ship2[shipNum].decCoord[1][1] = coordY;
-					field->ship2[shipNum].decStat = new bool[2];
-					field->ship2[shipNum].decStat[0] = true;
-					field->ship2[shipNum].decStat[1] = true;
-					field->ship2[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-		}
-	}
-
-	//трёхпалубные
-
-	shipNum = 0;
-
-	while (shipNum < 2) {
-
-		coordX = rand() % 10;
-		coordY = rand() % 10;
-		dir = rand() % 4;
-
-		if ((coordX < 3 && dir == 0) || (coordY < 3 && dir == 2) || (coordX > 7 && dir == 1) || (coordY > 7 && dir == 3)) {
-			continue;
-		}
-
-		if (checkArea(field, coordX, coordY)) {
-			if (dir == 0) {
-				if (checkArea(field, coordX - 1, coordY) && checkArea(field, coordX - 2, coordY)) {
-					field->field[coordX - 1][coordY] = '#';
-					field->field[coordX - 2][coordY] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship3[shipNum].size = 3;
-					field->ship3[shipNum].decCoord = new int* [3];
-					field->ship3[shipNum].decCoord[0] = new int[2];
-					field->ship3[shipNum].decCoord[1] = new int[2];
-					field->ship3[shipNum].decCoord[2] = new int[2];
-					field->ship3[shipNum].decCoord[0][0] = coordX;
-					field->ship3[shipNum].decCoord[0][1] = coordY;
-					field->ship3[shipNum].decCoord[1][0] = coordX - 1;
-					field->ship3[shipNum].decCoord[1][1] = coordY;
-					field->ship3[shipNum].decCoord[2][0] = coordX - 2;
-					field->ship3[shipNum].decCoord[2][1] = coordY;
-					field->ship3[shipNum].decStat = new bool[3];
-					field->ship3[shipNum].decStat[0] = true;
-					field->ship3[shipNum].decStat[1] = true;
-					field->ship3[shipNum].decStat[2] = true;
-					field->ship3[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else if (dir == 1) {
-				if (checkArea(field, coordX + 1, coordY) && checkArea(field, coordX + 2, coordY)) {
-					field->field[coordX + 1][coordY] = '#';
-					field->field[coordX + 2][coordY] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship3[shipNum].size = 3;
-					field->ship3[shipNum].decCoord = new int* [3];
-					field->ship3[shipNum].decCoord[0] = new int[2];
-					field->ship3[shipNum].decCoord[1] = new int[2];
-					field->ship3[shipNum].decCoord[2] = new int[2];
-					field->ship3[shipNum].decCoord[0][0] = coordX;
-					field->ship3[shipNum].decCoord[0][1] = coordY;
-					field->ship3[shipNum].decCoord[1][0] = coordX + 1;
-					field->ship3[shipNum].decCoord[1][1] = coordY;
-					field->ship3[shipNum].decCoord[2][0] = coordX + 2;
-					field->ship3[shipNum].decCoord[2][1] = coordY;
-					field->ship3[shipNum].decStat = new bool[3];
-					field->ship3[shipNum].decStat[0] = true;
-					field->ship3[shipNum].decStat[1] = true;
-					field->ship3[shipNum].decStat[2] = true;
-					field->ship3[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else if (dir == 2) {
-				if (checkArea(field, coordX, coordY - 1) && checkArea(field, coordX, coordY - 2)) {
-					field->field[coordX][coordY - 1] = '#';
-					field->field[coordX][coordY - 2] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship3[shipNum].size = 3;
-					field->ship3[shipNum].decCoord = new int* [3];
-					field->ship3[shipNum].decCoord[0] = new int[2];
-					field->ship3[shipNum].decCoord[1] = new int[2];
-					field->ship3[shipNum].decCoord[2] = new int[2];
-					field->ship3[shipNum].decCoord[0][0] = coordX;
-					field->ship3[shipNum].decCoord[0][1] = coordY;
-					field->ship3[shipNum].decCoord[1][0] = coordX;
-					field->ship3[shipNum].decCoord[1][1] = coordY - 1;
-					field->ship3[shipNum].decCoord[2][0] = coordX;
-					field->ship3[shipNum].decCoord[2][1] = coordY - 2;
-					field->ship3[shipNum].decStat = new bool[3];
-					field->ship3[shipNum].decStat[0] = true;
-					field->ship3[shipNum].decStat[1] = true;
-					field->ship3[shipNum].decStat[2] = true;
-					field->ship3[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else {
-				if (checkArea(field, coordX, coordY + 1) && checkArea(field, coordX, coordY + 2)) {
-					field->field[coordX][coordY + 1] = '#';
-					field->field[coordX][coordY + 2] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship3[shipNum].size = 3;
-					field->ship3[shipNum].decCoord = new int* [3];
-					field->ship3[shipNum].decCoord[0] = new int[2];
-					field->ship3[shipNum].decCoord[1] = new int[2];
-					field->ship3[shipNum].decCoord[2] = new int[2];
-					field->ship3[shipNum].decCoord[0][0] = coordX;
-					field->ship3[shipNum].decCoord[0][1] = coordY;
-					field->ship3[shipNum].decCoord[1][0] = coordX;
-					field->ship3[shipNum].decCoord[1][1] = coordY + 1;
-					field->ship3[shipNum].decCoord[2][0] = coordX;
-					field->ship3[shipNum].decCoord[2][1] = coordY + 2;
-					field->ship3[shipNum].decStat = new bool[3];
-					field->ship3[shipNum].decStat[0] = true;
-					field->ship3[shipNum].decStat[1] = true;
-					field->ship3[shipNum].decStat[2] = true;
-					field->ship3[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-
-
-		}
-
-	}
-
-	//четырёхпалубные
-
-	shipNum = 0;
-
-	while (shipNum < 1) {
-
-		coordX = rand() % 10;
-		coordY = rand() % 10;
-		dir = rand() % 4;
-
-		if ((coordX < 4 && dir == 0) || (coordY < 4 && dir == 2) || (coordX > 6 && dir == 1) || (coordY > 6 && dir == 3)) {
-			continue;
-		}
-
-		if (checkArea(field, coordX, coordY)) {
-			if (dir == 0) {
-				if (checkArea(field, coordX - 1, coordY) && checkArea(field, coordX - 2, coordY) && checkArea(field, coordX - 3, coordY)) {
-					field->field[coordX - 1][coordY] = '#';
-					field->field[coordX - 2][coordY] = '#';
-					field->field[coordX - 3][coordY] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship4[shipNum].size = 4;
-					field->ship4[shipNum].decCoord = new int* [4];
-					field->ship4[shipNum].decCoord[0] = new int[2];
-					field->ship4[shipNum].decCoord[1] = new int[2];
-					field->ship4[shipNum].decCoord[2] = new int[2];
-					field->ship4[shipNum].decCoord[3] = new int[2];
-					field->ship4[shipNum].decCoord[0][0] = coordX;
-					field->ship4[shipNum].decCoord[0][1] = coordY;
-					field->ship4[shipNum].decCoord[1][0] = coordX - 1;
-					field->ship4[shipNum].decCoord[1][1] = coordY;
-					field->ship4[shipNum].decCoord[2][0] = coordX - 2;
-					field->ship4[shipNum].decCoord[2][1] = coordY;
-					field->ship4[shipNum].decCoord[3][0] = coordX - 3;
-					field->ship4[shipNum].decCoord[3][1] = coordY;
-					field->ship4[shipNum].decStat = new bool[4];
-					field->ship4[shipNum].decStat[0] = true;
-					field->ship4[shipNum].decStat[1] = true;
-					field->ship4[shipNum].decStat[2] = true;
-					field->ship4[shipNum].decStat[3] = true;
-					field->ship4[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else if (dir == 1) {
-				if (checkArea(field, coordX + 1, coordY) && checkArea(field, coordX + 2, coordY) && checkArea(field, coordX + 3, coordY)) {
-					field->field[coordX + 1][coordY] = '#';
-					field->field[coordX + 2][coordY] = '#';
-					field->field[coordX + 3][coordY] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship4[shipNum].size = 4;
-					field->ship4[shipNum].decCoord = new int* [4];
-					field->ship4[shipNum].decCoord[0] = new int[2];
-					field->ship4[shipNum].decCoord[1] = new int[2];
-					field->ship4[shipNum].decCoord[2] = new int[2];
-					field->ship4[shipNum].decCoord[3] = new int[2];
-					field->ship4[shipNum].decCoord[0][0] = coordX;
-					field->ship4[shipNum].decCoord[0][1] = coordY;
-					field->ship4[shipNum].decCoord[1][0] = coordX + 1;
-					field->ship4[shipNum].decCoord[1][1] = coordY;
-					field->ship4[shipNum].decCoord[2][0] = coordX + 2;
-					field->ship4[shipNum].decCoord[2][1] = coordY;
-					field->ship4[shipNum].decCoord[3][0] = coordX + 3;
-					field->ship4[shipNum].decCoord[3][1] = coordY;
-					field->ship4[shipNum].decStat = new bool[4];
-					field->ship4[shipNum].decStat[0] = true;
-					field->ship4[shipNum].decStat[1] = true;
-					field->ship4[shipNum].decStat[2] = true;
-					field->ship4[shipNum].decStat[3] = true;
-					field->ship4[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else if (dir == 2) {
-				if (checkArea(field, coordX, coordY - 1) && checkArea(field, coordX, coordY - 2) && checkArea(field, coordX, coordY - 3)) {
-					field->field[coordX][coordY - 1] = '#';
-					field->field[coordX][coordY - 2] = '#';
-					field->field[coordX][coordY - 3] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship4[shipNum].size = 4;
-					field->ship4[shipNum].decCoord = new int* [4];
-					field->ship4[shipNum].decCoord[0] = new int[2];
-					field->ship4[shipNum].decCoord[1] = new int[2];
-					field->ship4[shipNum].decCoord[2] = new int[2];
-					field->ship4[shipNum].decCoord[3] = new int[2];
-					field->ship4[shipNum].decCoord[0][0] = coordX;
-					field->ship4[shipNum].decCoord[0][1] = coordY;
-					field->ship4[shipNum].decCoord[1][0] = coordX;
-					field->ship4[shipNum].decCoord[1][1] = coordY - 1;
-					field->ship4[shipNum].decCoord[2][0] = coordX;
-					field->ship4[shipNum].decCoord[2][1] = coordY - 2;
-					field->ship4[shipNum].decCoord[3][0] = coordX;
-					field->ship4[shipNum].decCoord[3][1] = coordY - 3;
-					field->ship4[shipNum].decStat = new bool[4];
-					field->ship4[shipNum].decStat[0] = true;
-					field->ship4[shipNum].decStat[1] = true;
-					field->ship4[shipNum].decStat[2] = true;
-					field->ship4[shipNum].decStat[3] = true;
-					field->ship4[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-			else {
-				if (checkArea(field, coordX, coordY + 1) && checkArea(field, coordX, coordY + 2) && checkArea(field, coordX, coordY + 3)) {
-					field->field[coordX][coordY + 1] = '#';
-					field->field[coordX][coordY + 2] = '#';
-					field->field[coordX][coordY + 3] = '#';
-					field->field[coordX][coordY] = '#';
-
-					field->ship4[shipNum].size = 4;
-					field->ship4[shipNum].decCoord = new int* [4];
-					field->ship4[shipNum].decCoord[0] = new int[2];
-					field->ship4[shipNum].decCoord[1] = new int[2];
-					field->ship4[shipNum].decCoord[2] = new int[2];
-					field->ship4[shipNum].decCoord[3] = new int[2];
-					field->ship4[shipNum].decCoord[0][0] = coordX;
-					field->ship4[shipNum].decCoord[0][1] = coordY;
-					field->ship4[shipNum].decCoord[1][0] = coordX;
-					field->ship4[shipNum].decCoord[1][1] = coordY + 1;
-					field->ship4[shipNum].decCoord[2][0] = coordX;
-					field->ship4[shipNum].decCoord[2][1] = coordY + 2;
-					field->ship4[shipNum].decCoord[3][0] = coordX;
-					field->ship4[shipNum].decCoord[3][1] = coordY + 3;
-					field->ship4[shipNum].decStat = new bool[4];
-					field->ship4[shipNum].decStat[0] = true;
-					field->ship4[shipNum].decStat[1] = true;
-					field->ship4[shipNum].decStat[2] = true;
-					field->ship4[shipNum].decStat[3] = true;
-					field->ship4[shipNum].genStat = 1;
-					shipNum++;
-				}
-			}
-		}
-	}
-}
-
-/*Простой вывод поля без прекрас*/
-void showField(playerField field)
-{
-	for (int i = 0; i < 10; i++) {
-		for (int c = 0; c < 10; c++)
-		{
-			std::cout << field.field[i][c] << " ";
-		}
-		std::cout << std::endl;
-	}
-}
-
-void setCursorPos(int y, int x)
-{
-	HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD pos = { x, y };
-	SetConsoleCursorPosition(output, pos);
-}
-
-void showFields(playerField* field1, playerField* field2)
-{
-
-	//сами поля
-	//очерёдность хода
-	//статистика по кораблям внизу
-	//имена игроков над полями
-	//"вызов" прицела попробовать вызвать изменение позиции курсора отдельной функцией и тд и тп
-	//sea - 177, ships - 254, destr - 206, miss - 153
-	char sea = 176;
-	char ship = 254;
-	char destr = 206;
-	char miss = 153;
-	char mist = 178;
-
-	std::cout << field1->playerName << "\t\t\t\t" << field2->playerName << std::endl;
-	std::cout << "   A B C D E F G H I J \t\t   A B C D E F G H I J " << std::endl;
-
-	for (int i = 0; i < 10; i++) {
-
-		i != 9 ? std::cout << " " << i + 1 << " " : std::cout << i + 1 << " ";
-
-
-		for (int c = 0; c < 10; c++) {
-			if (field1->field[i][c] == '~') {
-				std::cout << sea << " ";
-			}
-			else if (field1->field[i][c] == '#') {
-				std::cout << ship << " ";
-			}
-			else {
-				std::cout << field1->field[i][c] << " ";
-			}
-
-		}
-
-		std::cout << "\t\t";
-		i != 9 ? std::cout << " " << i + 1 << " " : std::cout << i + 1 << " ";
-
-		for (int c = 0; c < 10; c++) {
-
-			if (field2->field[i][c] == '~' || field2->field[i][c] == '#') {
-				std::cout << mist << " ";
-			}
-			else {
-				std::cout << field2->field[i][c] << " ";
-			}
-		}
-
-		std::cout << std::endl;
-	}
-
-	std::cout << std::endl;
-	std::cout << "   Remaining ships: \t\t   Remaining ships: " << std::endl;
-	std::cout << " Single-deck - " << field1->ship1[0].genStat + field1->ship1[1].genStat + field1->ship1[2].genStat + field1->ship1[3].genStat;
-	std::cout << "\t\t Single-deck - " << field2->ship1[0].genStat + field2->ship1[1].genStat + field2->ship1[2].genStat + field2->ship1[3].genStat << std::endl;
-	std::cout << " Double-deck - " << field1->ship2[0].genStat + field1->ship2[1].genStat + field1->ship2[2].genStat;
-	std::cout << "\t\t Double-deck - " << field2->ship2[0].genStat + field2->ship2[1].genStat + field2->ship2[2].genStat << std::endl;
-	std::cout << " Three-deck - " << field1->ship3[0].genStat + field1->ship3[1].genStat;
-	std::cout << "\t\t\t Three-deck - " << field2->ship3[0].genStat + field2->ship3[1].genStat << std::endl;
-	std::cout << " Four-deck - " << field1->ship4[0].genStat;
-	std::cout << "\t\t\t Four-deck - " << field2->ship4[0].genStat << std::endl;
-
-}
-
-void statistic() {}
-
 void fillFieldManual(playerField* field)
 {
 	system("CLS");
@@ -644,13 +183,15 @@ void fillFieldManual(playerField* field)
 	shipNum = 0;
 	coordX = 0;
 	coordY = 0;
-	std::cout << "Place the ship" << field->playerName << std::endl;
+	
 	showField(*field);
 	setCursorPos(0, 0);
-	std::cout << "*";
+	
 
 	while (shipNum < 4) {
 
+		std::cout << "Place the ship" << field->playerName << std::endl;
+		std::cout << "*";
 		entering = _getch();
 
 		if (entering == UP) {
@@ -1375,6 +916,482 @@ void fillFieldManual(playerField* field)
 	}
 }
 
+void fillFieldAutomatic(playerField* field)
+{
+	system("CLS");
+
+	int coordX, coordY, dir, shipNum;
+
+	//однопалубные
+
+	shipNum = 0;
+
+	while (shipNum < 4) {
+
+		coordX = rand() % 10;
+		coordY = rand() % 10;
+
+		if (checkArea(field, coordX, coordY)) {
+			field->field[coordX][coordY] = '#';
+
+			field->ship1[shipNum].size = 1;
+			field->ship1[shipNum].decCoord = new int* [1];
+			field->ship1[shipNum].decCoord[0] = new int[2];
+			field->ship1[shipNum].decCoord[0][0] = coordX;
+			field->ship1[shipNum].decCoord[0][1] = coordY;
+			field->ship1[shipNum].decStat = new bool[1];
+			field->ship1[shipNum].decStat[0] = true;
+			field->ship1[shipNum].genStat = 1;
+			shipNum++;
+		}
+	}
+
+	//двупалубные
+
+	shipNum = 0;
+
+	while (shipNum < 3) {
+
+		coordX = rand() % 10;
+		coordY = rand() % 10;
+		dir = rand() % 4;
+
+		if ((coordX == 0 && dir == 0) || (coordY == 0 && dir == 2) || (coordX == 9 && dir == 1) || (coordY == 9 && dir == 3)) {
+			continue;
+		}
+
+		if (checkArea(field, coordX, coordY)) {
+			if (dir == 0) {
+				if (checkArea(field, coordX - 1, coordY)) {
+					field->field[coordX - 1][coordY] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship2[shipNum].size = 2;
+					field->ship2[shipNum].decCoord = new int* [2];
+					field->ship2[shipNum].decCoord[0] = new int[2];
+					field->ship2[shipNum].decCoord[1] = new int[2];
+					field->ship2[shipNum].decCoord[0][0] = coordX - 1;
+					field->ship2[shipNum].decCoord[0][1] = coordY;
+					field->ship2[shipNum].decCoord[1][0] = coordX;
+					field->ship2[shipNum].decCoord[1][1] = coordY;
+					field->ship2[shipNum].decStat = new bool[2];
+					field->ship2[shipNum].decStat[0] = true;
+					field->ship2[shipNum].decStat[1] = true;
+					field->ship2[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else if (dir == 1) {
+				if (checkArea(field, coordX + 1, coordY)) {
+					field->field[coordX + 1][coordY] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship2[shipNum].size = 2;
+					field->ship2[shipNum].decCoord = new int* [2];
+					field->ship2[shipNum].decCoord[0] = new int[2];
+					field->ship2[shipNum].decCoord[1] = new int[2];
+					field->ship2[shipNum].decCoord[0][0] = coordX + 1;
+					field->ship2[shipNum].decCoord[0][1] = coordY;
+					field->ship2[shipNum].decCoord[1][0] = coordX;
+					field->ship2[shipNum].decCoord[1][1] = coordY;
+					field->ship2[shipNum].decStat = new bool[2];
+					field->ship2[shipNum].decStat[0] = true;
+					field->ship2[shipNum].decStat[1] = true;
+					field->ship2[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else if (dir == 2) {
+				if (checkArea(field, coordX, coordY - 1)) {
+					field->field[coordX][coordY - 1] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship2[shipNum].size = 2;
+					field->ship2[shipNum].decCoord = new int* [2];
+					field->ship2[shipNum].decCoord[0] = new int[2];
+					field->ship2[shipNum].decCoord[1] = new int[2];
+					field->ship2[shipNum].decCoord[0][0] = coordX;
+					field->ship2[shipNum].decCoord[0][1] = coordY - 1;
+					field->ship2[shipNum].decCoord[1][0] = coordX;
+					field->ship2[shipNum].decCoord[1][1] = coordY;
+					field->ship2[shipNum].decStat = new bool[2];
+					field->ship2[shipNum].decStat[0] = true;
+					field->ship2[shipNum].decStat[1] = true;
+					field->ship2[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else {
+				if (checkArea(field, coordX, coordY + 1)) {
+					field->field[coordX][coordY + 1] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship2[shipNum].size = 2;
+					field->ship2[shipNum].decCoord = new int* [2];
+					field->ship2[shipNum].decCoord[0] = new int[2];
+					field->ship2[shipNum].decCoord[1] = new int[2];
+					field->ship2[shipNum].decCoord[0][0] = coordX;
+					field->ship2[shipNum].decCoord[0][1] = coordY + 1;
+					field->ship2[shipNum].decCoord[1][0] = coordX;
+					field->ship2[shipNum].decCoord[1][1] = coordY;
+					field->ship2[shipNum].decStat = new bool[2];
+					field->ship2[shipNum].decStat[0] = true;
+					field->ship2[shipNum].decStat[1] = true;
+					field->ship2[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+		}
+	}
+
+	//трёхпалубные
+
+	shipNum = 0;
+
+	while (shipNum < 2) {
+
+		coordX = rand() % 10;
+		coordY = rand() % 10;
+		dir = rand() % 4;
+
+		if ((coordX < 3 && dir == 0) || (coordY < 3 && dir == 2) || (coordX > 7 && dir == 1) || (coordY > 7 && dir == 3)) {
+			continue;
+		}
+
+		if (checkArea(field, coordX, coordY)) {
+			if (dir == 0) {
+				if (checkArea(field, coordX - 1, coordY) && checkArea(field, coordX - 2, coordY)) {
+					field->field[coordX - 1][coordY] = '#';
+					field->field[coordX - 2][coordY] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship3[shipNum].size = 3;
+					field->ship3[shipNum].decCoord = new int* [3];
+					field->ship3[shipNum].decCoord[0] = new int[2];
+					field->ship3[shipNum].decCoord[1] = new int[2];
+					field->ship3[shipNum].decCoord[2] = new int[2];
+					field->ship3[shipNum].decCoord[0][0] = coordX;
+					field->ship3[shipNum].decCoord[0][1] = coordY;
+					field->ship3[shipNum].decCoord[1][0] = coordX - 1;
+					field->ship3[shipNum].decCoord[1][1] = coordY;
+					field->ship3[shipNum].decCoord[2][0] = coordX - 2;
+					field->ship3[shipNum].decCoord[2][1] = coordY;
+					field->ship3[shipNum].decStat = new bool[3];
+					field->ship3[shipNum].decStat[0] = true;
+					field->ship3[shipNum].decStat[1] = true;
+					field->ship3[shipNum].decStat[2] = true;
+					field->ship3[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else if (dir == 1) {
+				if (checkArea(field, coordX + 1, coordY) && checkArea(field, coordX + 2, coordY)) {
+					field->field[coordX + 1][coordY] = '#';
+					field->field[coordX + 2][coordY] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship3[shipNum].size = 3;
+					field->ship3[shipNum].decCoord = new int* [3];
+					field->ship3[shipNum].decCoord[0] = new int[2];
+					field->ship3[shipNum].decCoord[1] = new int[2];
+					field->ship3[shipNum].decCoord[2] = new int[2];
+					field->ship3[shipNum].decCoord[0][0] = coordX;
+					field->ship3[shipNum].decCoord[0][1] = coordY;
+					field->ship3[shipNum].decCoord[1][0] = coordX + 1;
+					field->ship3[shipNum].decCoord[1][1] = coordY;
+					field->ship3[shipNum].decCoord[2][0] = coordX + 2;
+					field->ship3[shipNum].decCoord[2][1] = coordY;
+					field->ship3[shipNum].decStat = new bool[3];
+					field->ship3[shipNum].decStat[0] = true;
+					field->ship3[shipNum].decStat[1] = true;
+					field->ship3[shipNum].decStat[2] = true;
+					field->ship3[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else if (dir == 2) {
+				if (checkArea(field, coordX, coordY - 1) && checkArea(field, coordX, coordY - 2)) {
+					field->field[coordX][coordY - 1] = '#';
+					field->field[coordX][coordY - 2] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship3[shipNum].size = 3;
+					field->ship3[shipNum].decCoord = new int* [3];
+					field->ship3[shipNum].decCoord[0] = new int[2];
+					field->ship3[shipNum].decCoord[1] = new int[2];
+					field->ship3[shipNum].decCoord[2] = new int[2];
+					field->ship3[shipNum].decCoord[0][0] = coordX;
+					field->ship3[shipNum].decCoord[0][1] = coordY;
+					field->ship3[shipNum].decCoord[1][0] = coordX;
+					field->ship3[shipNum].decCoord[1][1] = coordY - 1;
+					field->ship3[shipNum].decCoord[2][0] = coordX;
+					field->ship3[shipNum].decCoord[2][1] = coordY - 2;
+					field->ship3[shipNum].decStat = new bool[3];
+					field->ship3[shipNum].decStat[0] = true;
+					field->ship3[shipNum].decStat[1] = true;
+					field->ship3[shipNum].decStat[2] = true;
+					field->ship3[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else {
+				if (checkArea(field, coordX, coordY + 1) && checkArea(field, coordX, coordY + 2)) {
+					field->field[coordX][coordY + 1] = '#';
+					field->field[coordX][coordY + 2] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship3[shipNum].size = 3;
+					field->ship3[shipNum].decCoord = new int* [3];
+					field->ship3[shipNum].decCoord[0] = new int[2];
+					field->ship3[shipNum].decCoord[1] = new int[2];
+					field->ship3[shipNum].decCoord[2] = new int[2];
+					field->ship3[shipNum].decCoord[0][0] = coordX;
+					field->ship3[shipNum].decCoord[0][1] = coordY;
+					field->ship3[shipNum].decCoord[1][0] = coordX;
+					field->ship3[shipNum].decCoord[1][1] = coordY + 1;
+					field->ship3[shipNum].decCoord[2][0] = coordX;
+					field->ship3[shipNum].decCoord[2][1] = coordY + 2;
+					field->ship3[shipNum].decStat = new bool[3];
+					field->ship3[shipNum].decStat[0] = true;
+					field->ship3[shipNum].decStat[1] = true;
+					field->ship3[shipNum].decStat[2] = true;
+					field->ship3[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+
+
+		}
+
+	}
+
+	//четырёхпалубные
+
+	shipNum = 0;
+
+	while (shipNum < 1) {
+
+		coordX = rand() % 10;
+		coordY = rand() % 10;
+		dir = rand() % 4;
+
+		if ((coordX < 4 && dir == 0) || (coordY < 4 && dir == 2) || (coordX > 6 && dir == 1) || (coordY > 6 && dir == 3)) {
+			continue;
+		}
+
+		if (checkArea(field, coordX, coordY)) {
+			if (dir == 0) {
+				if (checkArea(field, coordX - 1, coordY) && checkArea(field, coordX - 2, coordY) && checkArea(field, coordX - 3, coordY)) {
+					field->field[coordX - 1][coordY] = '#';
+					field->field[coordX - 2][coordY] = '#';
+					field->field[coordX - 3][coordY] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship4[shipNum].size = 4;
+					field->ship4[shipNum].decCoord = new int* [4];
+					field->ship4[shipNum].decCoord[0] = new int[2];
+					field->ship4[shipNum].decCoord[1] = new int[2];
+					field->ship4[shipNum].decCoord[2] = new int[2];
+					field->ship4[shipNum].decCoord[3] = new int[2];
+					field->ship4[shipNum].decCoord[0][0] = coordX;
+					field->ship4[shipNum].decCoord[0][1] = coordY;
+					field->ship4[shipNum].decCoord[1][0] = coordX - 1;
+					field->ship4[shipNum].decCoord[1][1] = coordY;
+					field->ship4[shipNum].decCoord[2][0] = coordX - 2;
+					field->ship4[shipNum].decCoord[2][1] = coordY;
+					field->ship4[shipNum].decCoord[3][0] = coordX - 3;
+					field->ship4[shipNum].decCoord[3][1] = coordY;
+					field->ship4[shipNum].decStat = new bool[4];
+					field->ship4[shipNum].decStat[0] = true;
+					field->ship4[shipNum].decStat[1] = true;
+					field->ship4[shipNum].decStat[2] = true;
+					field->ship4[shipNum].decStat[3] = true;
+					field->ship4[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else if (dir == 1) {
+				if (checkArea(field, coordX + 1, coordY) && checkArea(field, coordX + 2, coordY) && checkArea(field, coordX + 3, coordY)) {
+					field->field[coordX + 1][coordY] = '#';
+					field->field[coordX + 2][coordY] = '#';
+					field->field[coordX + 3][coordY] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship4[shipNum].size = 4;
+					field->ship4[shipNum].decCoord = new int* [4];
+					field->ship4[shipNum].decCoord[0] = new int[2];
+					field->ship4[shipNum].decCoord[1] = new int[2];
+					field->ship4[shipNum].decCoord[2] = new int[2];
+					field->ship4[shipNum].decCoord[3] = new int[2];
+					field->ship4[shipNum].decCoord[0][0] = coordX;
+					field->ship4[shipNum].decCoord[0][1] = coordY;
+					field->ship4[shipNum].decCoord[1][0] = coordX + 1;
+					field->ship4[shipNum].decCoord[1][1] = coordY;
+					field->ship4[shipNum].decCoord[2][0] = coordX + 2;
+					field->ship4[shipNum].decCoord[2][1] = coordY;
+					field->ship4[shipNum].decCoord[3][0] = coordX + 3;
+					field->ship4[shipNum].decCoord[3][1] = coordY;
+					field->ship4[shipNum].decStat = new bool[4];
+					field->ship4[shipNum].decStat[0] = true;
+					field->ship4[shipNum].decStat[1] = true;
+					field->ship4[shipNum].decStat[2] = true;
+					field->ship4[shipNum].decStat[3] = true;
+					field->ship4[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else if (dir == 2) {
+				if (checkArea(field, coordX, coordY - 1) && checkArea(field, coordX, coordY - 2) && checkArea(field, coordX, coordY - 3)) {
+					field->field[coordX][coordY - 1] = '#';
+					field->field[coordX][coordY - 2] = '#';
+					field->field[coordX][coordY - 3] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship4[shipNum].size = 4;
+					field->ship4[shipNum].decCoord = new int* [4];
+					field->ship4[shipNum].decCoord[0] = new int[2];
+					field->ship4[shipNum].decCoord[1] = new int[2];
+					field->ship4[shipNum].decCoord[2] = new int[2];
+					field->ship4[shipNum].decCoord[3] = new int[2];
+					field->ship4[shipNum].decCoord[0][0] = coordX;
+					field->ship4[shipNum].decCoord[0][1] = coordY;
+					field->ship4[shipNum].decCoord[1][0] = coordX;
+					field->ship4[shipNum].decCoord[1][1] = coordY - 1;
+					field->ship4[shipNum].decCoord[2][0] = coordX;
+					field->ship4[shipNum].decCoord[2][1] = coordY - 2;
+					field->ship4[shipNum].decCoord[3][0] = coordX;
+					field->ship4[shipNum].decCoord[3][1] = coordY - 3;
+					field->ship4[shipNum].decStat = new bool[4];
+					field->ship4[shipNum].decStat[0] = true;
+					field->ship4[shipNum].decStat[1] = true;
+					field->ship4[shipNum].decStat[2] = true;
+					field->ship4[shipNum].decStat[3] = true;
+					field->ship4[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+			else {
+				if (checkArea(field, coordX, coordY + 1) && checkArea(field, coordX, coordY + 2) && checkArea(field, coordX, coordY + 3)) {
+					field->field[coordX][coordY + 1] = '#';
+					field->field[coordX][coordY + 2] = '#';
+					field->field[coordX][coordY + 3] = '#';
+					field->field[coordX][coordY] = '#';
+
+					field->ship4[shipNum].size = 4;
+					field->ship4[shipNum].decCoord = new int* [4];
+					field->ship4[shipNum].decCoord[0] = new int[2];
+					field->ship4[shipNum].decCoord[1] = new int[2];
+					field->ship4[shipNum].decCoord[2] = new int[2];
+					field->ship4[shipNum].decCoord[3] = new int[2];
+					field->ship4[shipNum].decCoord[0][0] = coordX;
+					field->ship4[shipNum].decCoord[0][1] = coordY;
+					field->ship4[shipNum].decCoord[1][0] = coordX;
+					field->ship4[shipNum].decCoord[1][1] = coordY + 1;
+					field->ship4[shipNum].decCoord[2][0] = coordX;
+					field->ship4[shipNum].decCoord[2][1] = coordY + 2;
+					field->ship4[shipNum].decCoord[3][0] = coordX;
+					field->ship4[shipNum].decCoord[3][1] = coordY + 3;
+					field->ship4[shipNum].decStat = new bool[4];
+					field->ship4[shipNum].decStat[0] = true;
+					field->ship4[shipNum].decStat[1] = true;
+					field->ship4[shipNum].decStat[2] = true;
+					field->ship4[shipNum].decStat[3] = true;
+					field->ship4[shipNum].genStat = 1;
+					shipNum++;
+				}
+			}
+		}
+	}
+}
+
+/*Простой вывод поля без прекрас*/
+void showField(playerField field)
+{
+	for (int i = 0; i < 10; i++) {
+		for (int c = 0; c < 10; c++)
+		{
+			std::cout << field.field[i][c] << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+void setCursorPos(int y, int x)
+{
+	HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD pos = { x, y };
+	SetConsoleCursorPosition(output, pos);
+}
+
+void showFields(playerField* field1, playerField* field2)
+{
+
+	//сами поля
+	//очерёдность хода
+	//статистика по кораблям внизу
+	//имена игроков над полями
+	//"вызов" прицела попробовать вызвать изменение позиции курсора отдельной функцией и тд и тп
+	//sea - 177, ships - 254, destr - 206, miss - 153
+	char sea = 176;
+	char ship = 254;
+	char destr = 206;
+	char miss = 153;
+	char mist = 178;
+
+	std::cout << "\n\n\n";
+	std::cout << "\t\t\t\t" << field1->playerName << "\t\t\t\t" << field2->playerName << std::endl;
+	std::cout << "\t\t\t   A B C D E F G H I J \t\t   A B C D E F G H I J " << std::endl;
+
+	for (int i = 0; i < 10; i++) {
+
+		i != 9 ? std::cout << "\t\t\t " << i + 1 << " " : std::cout << "\t\t\t" << i + 1 << " ";
+
+
+		for (int c = 0; c < 10; c++) {
+			if (field1->field[i][c] == '~' || field1->field[i][c] == '0') {
+				std::cout << sea << " ";
+			}
+			else if (field1->field[i][c] == '#') {
+				std::cout << ship << " ";
+			}
+			else {
+				std::cout << field1->field[i][c] << " ";
+			}
+
+		}
+
+		std::cout << "\t\t";
+		i != 9 ? std::cout << " " << i + 1 << " " : std::cout << i + 1 << " ";
+
+		for (int c = 0; c < 10; c++) {
+
+			if (field2->field[i][c] == '~' || field2->field[i][c] == '#') {
+				std::cout << mist << " ";
+			}
+			else if (field2->field[i][c] == '0') {
+				std::cout << miss << " ";
+			}
+			else {
+				std::cout << field2->field[i][c] << " ";
+			}
+		}
+
+		std::cout << std::endl;
+	}
+
+	std::cout << std::endl;
+	std::cout << "   Remaining ships: \t\t   Remaining ships: " << std::endl;
+	std::cout << " Single-deck - " << field1->ship1[0].genStat + field1->ship1[1].genStat + field1->ship1[2].genStat + field1->ship1[3].genStat;
+	std::cout << "\t\t Single-deck - " << field2->ship1[0].genStat + field2->ship1[1].genStat + field2->ship1[2].genStat + field2->ship1[3].genStat << std::endl;
+	std::cout << " Double-deck - " << field1->ship2[0].genStat + field1->ship2[1].genStat + field1->ship2[2].genStat;
+	std::cout << "\t\t Double-deck - " << field2->ship2[0].genStat + field2->ship2[1].genStat + field2->ship2[2].genStat << std::endl;
+	std::cout << " Three-deck - " << field1->ship3[0].genStat + field1->ship3[1].genStat;
+	std::cout << "\t\t\t Three-deck - " << field2->ship3[0].genStat + field2->ship3[1].genStat << std::endl;
+	std::cout << " Four-deck - " << field1->ship4[0].genStat;
+	std::cout << "\t\t\t Four-deck - " << field2->ship4[0].genStat << std::endl;
+
+}
+
 void makeShoot(playerField* field1, playerField* field2)
 {
 	int modX = 1, modY = 35;
@@ -1549,18 +1566,14 @@ void mainMenu(playerField* field_1, playerField* field_2)
 										fillFieldManual(field_1);
 										//функция для ручного расставления кораблей для игрока 2
 										fillFieldManual(field_2);
-										showFields(field_1, field_2);
-										system("pause"); // пауза для теста показа полей, убрать потом
-										//запуск игры с переданными полями
+										startGame(field_1, field_2);
 										break;
 									case '2':
 										//функция для автоматического расставления кораблей для игрока 1
 										fillFieldAutomatic(field_1);
 										//функция для автоматического расставления кораблей для игрока 2
 										fillFieldAutomatic(field_2);
-										showFields(field_1, field_2);
-										system("pause"); // пауза для теста показа полей, убрать потом
-										//запуск игры с переданными полями
+										startGame(field_1, field_2);
 										break;
 									case '0':
 										exit = false;
@@ -1611,7 +1624,6 @@ void mainMenu(playerField* field_1, playerField* field_2)
 					exit = false;
 					break;
 				default:
-					std::cout << "Something wrong." << std::endl; //в принципе будет бесполезен, если программа будет реагировать только на приавильные нажатия, игнорируя неправильные, но пока пусть будет
 					break;
 			}
 		
@@ -1657,8 +1669,156 @@ bool terminator_1(playerField* field){
 			std::cout << "Hit!";
 			return true;
 		}
-
 	}
 }
 //"умный" бот, , возвращает true в случае удачного выстрела
-bool terminator_2(playerField*){}
+bool terminator_2(playerField*) { return true; }
+
+void startGame(playerField* field1, playerField* field2)
+{
+	//пока есть корабли или не нажата кнопка выхода 
+		//игроку1 предлагается сделать выстрел (если это человек, то выхывается функция нацеливания)
+			//если попал, выводится сообщение о попадании
+				//если у противника не осталось кораблей, то игра заканчивается, и выводится сообщение о победе
+			//если промазал, то ход передаётся игроку2
+
+	system("CLS");
+
+	while (true) {  //функция, возвращающая количество оставшихся кораблей, если у одного из игроков кораблей не осталось, то возвращается false
+		while (shooter(field1, field2)) {
+			std::cout << "MIIIIIIIS";
+			system("PAUSE");
+		}
+
+		while (shooter(field2, field1)) {
+			std::cout << "MIIIIIIIS";
+			system("PAUSE");
+		}
+
+	}
+}
+//предоставляет возможность игроку сделать выстрел
+bool shooter(playerField* field1, playerField* field2)
+{
+	
+	int coordX, coordY;
+	char entering;
+	enum { UP = 72, DOWN = 80, RIGHT = 77, LEFT = 75, ENTER = '\r'};
+
+	coordX = 5;
+	coordY = 59;
+
+	while (true) {
+		system("CLS");
+
+		showFields(field1, field2);
+
+		setCursorPos(coordX, coordY);
+
+		std::cout << '+';
+
+
+		entering = _getch();
+
+		if (entering == UP) {
+			system("CLS");
+			if (coordX > 5) {
+				coordX -= 1;
+			}
+		}
+		else if (entering == DOWN) {
+			system("CLS");
+			if (coordX < 14) {
+				coordX += 1;
+			}
+		}
+		else if (entering == RIGHT) {
+			system("CLS");
+			if (coordY < 77) {
+				coordY += 2;
+			}
+		}
+		else if (entering == LEFT) {
+			system("CLS");
+			if (coordY > 59) {
+				coordY -= 2;
+			}
+		}
+		else if (entering == ENTER) {
+
+			if (field2->field[coordX - 5][(coordY - 59) / 2] == '#') {
+				//функция, для поиска и записи состояния о корабле
+				field2->field[coordX - 5][(coordY - 59) / 2] = 'X';
+				std::cout << "Nice shoot!" << std::endl;
+			}
+			else if(field2->field[coordX - 5][(coordY - 59) / 2] == 'X' || field2->field[coordX - 5][(coordY - 59) / 2] == '0') {
+				std::cout << "Try again." << std::endl;
+			}
+			else {
+				field2->field[coordX - 5][(coordY - 59) / 2] = '0';
+				std::cout << "Miss." << std::endl;
+				return false;
+			}
+
+
+		}
+	}
+
+
+
+
+
+}
+
+bool winChecker(playerField* field1, playerField* field2)
+{
+
+}
+
+void accountant(playerField field, int x, int y)
+{
+
+	//однопалубники
+
+	for (int i = 0; i < 4; i++) {
+		if (field.ship1[i].decCoord[0][0] == x && field.ship1[i].decCoord[0][0] == y) {
+			field.ship1[i].decStat = false;
+			field.ship1[i].genStat = 0;
+		}
+	}
+
+	//двухпалубники
+
+	for (int i = 0; i < 3; i++) {
+		for (int c = 0; c < 2; c++) {
+			field.ship2[i].decCoord[c][0] == x && field.ship2[i].decCoord[c][1] == y;
+			field.ship1[i].decStat = false;
+		}
+
+	}
+
+	//трёхпалубники
+
+	for (int i = 0; i < 2; i++) {
+		if (field.ship1[i].decCoord[0][0] == x || field.ship1[i].decCoord[0][0] == y) {
+			field.ship1[i].decStat = false;
+			field.ship1[i].genStat = 0;
+		}
+	}
+
+	//четырехпалубники
+
+	for (int i = 0; i < 4; i++) {
+		if (field.ship1[i].decCoord[0][0] == x || field.ship1[i].decCoord[0][0] == y) {
+			field.ship1[i].decStat = false;
+			field.ship1[i].genStat = 0;
+		}
+	}
+
+
+
+}
+
+
+//заполянет поля вокруг корабля, просто принимая его (там уже содержатся координаты и прочее
+//функция, проверяющая потоплен ли корабль в который попали, или нет

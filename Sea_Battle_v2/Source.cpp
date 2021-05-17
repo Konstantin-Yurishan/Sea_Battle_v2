@@ -72,7 +72,7 @@ struct playerField {
 	ship* ship2 = new ship[3];
 	ship* ship3 = new ship[2];
 	ship* ship4 = new ship[1];
-
+	short amount = 20;
 	char** field;
 
 };
@@ -87,17 +87,18 @@ void fillFieldManual(playerField*);
 void showField(playerField);
 void setCursorPos(int, int);
 void showFields(playerField*, playerField*);
-void makeShoot(playerField*, playerField*);
-bool shootChecker(playerField*, int, int);
+//void makeShoot(playerField*, playerField*);
+//bool shootChecker(playerField*, int, int);
 //void game(); //входят функции intro, mainMenu
 void mainMenu(playerField*, playerField*);
 void consoleSize(); //задаёт размер окна
 bool terminator_1(playerField*);
 bool terminator_2(playerField*);
-void startGame(playerField*, playerField*);
+void startGame(playerField*, playerField*, int);
 bool shooter(playerField*, playerField*); //представляем навигацию по вражескому полю
 bool winChecker(playerField*, playerField*);
 void accountant(playerField*, int, int); // запись информации по выстрелу
+void arealMarker(playerField*, ship);
 
 
 int main()
@@ -119,20 +120,12 @@ int main()
 	playerField field_2 = createPlayerField();
 	playerField* field_2_ptr = &field_2;
 
-
 	mainMenu(field_1_ptr, field_2_ptr);
-	showFields(field_1_ptr, field_2_ptr);
-
-	//fillFieldAutomatic(field_1_ptr);
-	//fillFieldAutomatic(field_2_ptr);
-	//showField(field);
-	//fillFieldManual(field_1_ptr);
-
-	//makeShoot(field_1_ptr, field_2_ptr);
 
 	return 0;
 }
 
+//+создание изначальных полей
 playerField createPlayerField()
 {
 	playerField newField;
@@ -152,15 +145,14 @@ playerField createPlayerField()
 	return newField;
 }
 
+//+проверка окресности поля
 bool checkArea(playerField* field, int X, int Y)
 {
 	for (int i = X - 1; i <= X + 1; i++) {
 		for (int c = Y - 1; c <= Y + 1; c++) {
-
 			if (i < 0 || c < 0 || i > 9 || c > 9 || field->field[i][c] == '~' || field->field[i][c] != '#') {
 				continue;
-			}
-			else {
+			} else {
 				return false;
 			}
 		}
@@ -168,6 +160,7 @@ bool checkArea(playerField* field, int X, int Y)
 	return true;
 }
 
+//-заполнение поля кораблями вручную
 void fillFieldManual(playerField* field)
 {
 	system("CLS");
@@ -178,102 +171,25 @@ void fillFieldManual(playerField* field)
 	bool rota = true;
 	enum { UP = 72, DOWN = 80, RIGHT = 77, LEFT = 75, ENTER = '\r', ROTATION = 'r' };
 
-
-	//однопалубные
-	shipNum = 0;
-	coordX = 0;
-	coordY = 0;
+	std::cout << "Place the ship" << field->playerName << std::endl;
 	
+	setCursorPos(3, 0);
 	showField(*field);
-	setCursorPos(0, 0);
+	setCursorPos(3, 0);
+	std::cout << "* * * *";
 	
-
-	while (shipNum < 4) {
-
-		std::cout << "Place the ship" << field->playerName << std::endl;
-		std::cout << "*";
-		entering = _getch();
-
-		if (entering == UP) {
-			system("CLS");
-			if (coordX > 0) {
-				coordX -= 1;
-			}
-			showField(*field);
-			setCursorPos(coordX, coordY * 2);
-			std::cout << '*';
-			setCursorPos(20, 20);
-			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
-
-		}
-		else if (entering == DOWN) {
-			system("CLS");
-			if (coordX < 9) {
-				coordX += 1;
-			}
-			showField(*field);
-			setCursorPos(coordX, coordY * 2);
-			std::cout << '*';
-			setCursorPos(20, 20);
-			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
-		}
-		else if (entering == RIGHT) {
-			system("CLS");
-			if (coordY < 9) {
-				coordY += 1;
-			}
-			showField(*field);
-			setCursorPos(coordX, coordY * 2);
-			std::cout << '*';
-			setCursorPos(20, 20);
-			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
-		}
-		else if (entering == LEFT) {
-			system("CLS");
-			if (coordY > 0) {
-				coordY -= 1;
-			}
-			showField(*field);
-			setCursorPos(coordX, coordY * 2);
-			std::cout << '*';
-			setCursorPos(20, 20);
-			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
-		}
-		else if (entering == ENTER) {
-			system("CLS");
-
-			if (checkArea(field, coordX, coordY)) {
-				field->field[coordX][coordY] = '#';
-
-				field->ship1[shipNum].size = 1;
-				field->ship1[shipNum].decCoord = new int* [1];
-				field->ship1[shipNum].decCoord[0] = new int[2];
-				field->ship1[shipNum].decCoord[0][0] = coordX;
-				field->ship1[shipNum].decCoord[0][1] = coordY;
-				field->ship1[shipNum].decStat = new bool[1];
-				field->ship1[shipNum].decStat[0] = true;
-				field->ship1[shipNum].genStat = 1;
-				shipNum++;
-				showField(*field);
-			}
-			else {
-				showField(*field);
-				std::cout << "Wrong position!";
-			}
-		}
-	}
-
-
-	//двухпалубные
+	//четырёхпалубные
 	shipNum = 0;
 	coordX = 0;
 	coordY = 0;
 
-	while (shipNum < 3) {
+
+	while (shipNum < 1) {
 
 		entering = _getch();
 
 		if (entering == UP) {
+
 			system("CLS");
 
 			if (coordX > 0) {
@@ -281,11 +197,15 @@ void fillFieldManual(playerField* field)
 			}
 
 			showField(*field);
-			if (rota) {
 
+			if (rota) {
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 4);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 6);
 				std::cout << "*";
 			}
 			else {
@@ -293,15 +213,19 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
+				setCursorPos(coordX + 2, coordY * 2);
+				std::cout << "*";
+				setCursorPos(coordX + 3, coordY * 2);
+				std::cout << "*";
 			}
+
 			setCursorPos(20, 20);
+
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
 
 		}
 		else if (entering == DOWN) {
 			system("CLS");
-
-
 
 			showField(*field);
 
@@ -313,14 +237,22 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
 				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 4);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 6);
+				std::cout << "*";
 			}
 			else {
-				if (coordX < 8) {
+				if (coordX < 6) {
 					coordX += 1;
 				}
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
+				std::cout << "*";
+				setCursorPos(coordX + 2, coordY * 2);
+				std::cout << "*";
+				setCursorPos(coordX + 3, coordY * 2);
 				std::cout << "*";
 			}
 
@@ -330,18 +262,24 @@ void fillFieldManual(playerField* field)
 
 		}
 		else if (entering == RIGHT) {
+
 			system("CLS");
 
 
 
 			showField(*field);
+
 			if (rota) {
-				if (coordY < 8) {
+				if (coordY < 6) {
 					coordY += 1;
 				}
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 4);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 6);
 				std::cout << "*";
 			}
 			else {
@@ -352,11 +290,19 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
+				setCursorPos(coordX + 2, coordY * 2);
+				std::cout << "*";
+				setCursorPos(coordX + 3, coordY * 2);
+				std::cout << "*";
 			}
+
 			setCursorPos(20, 20);
+
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+
 		}
 		else if (entering == LEFT) {
+
 			system("CLS");
 
 			if (coordY > 0) {
@@ -370,46 +316,72 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
 				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 4);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 6);
+				std::cout << "*";
 			}
 			else {
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
+				setCursorPos(coordX + 2, coordY * 2);
+				std::cout << "*";
+				setCursorPos(coordX + 3, coordY * 2);
+				std::cout << "*";
 			}
+
 			setCursorPos(20, 20);
+
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
 		}
 		else if (entering == ENTER) {
 			system("CLS");
 
-
-
 			if (rota) {
 				coordX2 = coordX;
 				coordY2 = coordY + 1;
+				coordX3 = coordX;
+				coordY3 = coordY + 2;
+				coordX4 = coordX;
+				coordY4 = coordY + 3;
 			}
 			else {
 				coordX2 = coordX + 1;
 				coordY2 = coordY;
+				coordX3 = coordX + 2;
+				coordY3 = coordY;
+				coordX4 = coordX + 3;
+				coordY4 = coordY;
 			}
 
-			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2)) {
-				field->field[coordX2][coordY2] = '#';
+			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2) && checkArea(field, coordX3, coordY3) && checkArea(field, coordX4, coordY4)) {
 				field->field[coordX][coordY] = '#';
+				field->field[coordX2][coordY2] = '#';
+				field->field[coordX3][coordY3] = '#';
+				field->field[coordX4][coordY4] = '#';
 
-				field->ship2[shipNum].size = 2;
-				field->ship2[shipNum].decCoord = new int* [2];
-				field->ship2[shipNum].decCoord[0] = new int[2];
-				field->ship2[shipNum].decCoord[1] = new int[2];
-				field->ship2[shipNum].decCoord[0][0] = coordX2;
-				field->ship2[shipNum].decCoord[0][1] = coordX2;
-				field->ship2[shipNum].decCoord[1][0] = coordX;
-				field->ship2[shipNum].decCoord[1][1] = coordY;
-				field->ship2[shipNum].decStat = new bool[2];
-				field->ship2[shipNum].decStat[0] = true;
-				field->ship2[shipNum].decStat[1] = true;
-				field->ship2[shipNum].genStat = 1;
+				field->ship4[shipNum].size = 4;
+				field->ship4[shipNum].decCoord = new int* [4];
+				field->ship4[shipNum].decCoord[0] = new int[2];
+				field->ship4[shipNum].decCoord[1] = new int[2];
+				field->ship4[shipNum].decCoord[2] = new int[2];
+				field->ship4[shipNum].decCoord[3] = new int[2];
+				field->ship4[shipNum].decCoord[0][0] = coordX;
+				field->ship4[shipNum].decCoord[0][1] = coordY;
+				field->ship4[shipNum].decCoord[1][0] = coordX2;
+				field->ship4[shipNum].decCoord[1][1] = coordY2;
+				field->ship4[shipNum].decCoord[2][0] = coordX3;
+				field->ship4[shipNum].decCoord[2][1] = coordY3;
+				field->ship4[shipNum].decCoord[3][0] = coordX4;
+				field->ship4[shipNum].decCoord[3][1] = coordY4;
+				field->ship4[shipNum].decStat = new bool[4];
+				field->ship4[shipNum].decStat[0] = true;
+				field->ship4[shipNum].decStat[1] = true;
+				field->ship4[shipNum].decStat[2] = true;
+				field->ship4[shipNum].decStat[3] = true;
+				field->ship4[shipNum].genStat = 1;
 				shipNum++;
 				showField(*field);
 			}
@@ -420,10 +392,10 @@ void fillFieldManual(playerField* field)
 		}
 		else if (entering == ROTATION) {
 
-			if (coordX + 1 > 9 || coordY * 2 + 2 > 18) {
+
+			if (coordX + 3 > 9 || coordY * 2 + 4 > 18) {
 				continue;
 			}
-
 			system("CLS");
 
 			showField(*field);
@@ -435,24 +407,32 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
 				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 4);
+				std::cout << "*";
+				setCursorPos(coordX, coordY * 2 + 6);
+				std::cout << "*";
 			}
 			else {
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
+				setCursorPos(coordX + 2, coordY * 2);
+				std::cout << "*";
+				setCursorPos(coordX + 3, coordY * 2);
+				std::cout << "*";
 			}
-
 			setCursorPos(20, 20);
-
 		}
 	}
+
 
 	//трёхпалубные
 	shipNum = 0;
 	coordX = 0;
 	coordY = 0;
-
+	std::cout << "Place the ship" << field->playerName << std::endl;
+	std::cout << "* * *";
 	while (shipNum < 2) {
 
 		entering = _getch();
@@ -665,17 +645,18 @@ void fillFieldManual(playerField* field)
 		}
 	}
 
-	//четырёхпалубные
+
+	//двухпалубные
 	shipNum = 0;
 	coordX = 0;
 	coordY = 0;
-
-	while (shipNum < 1) {
+	std::cout << "Place the ship" << field->playerName << std::endl;
+	std::cout << "* *";
+	while (shipNum < 3) {
 
 		entering = _getch();
 
 		if (entering == UP) {
-
 			system("CLS");
 
 			if (coordX > 0) {
@@ -683,15 +664,11 @@ void fillFieldManual(playerField* field)
 			}
 
 			showField(*field);
-
 			if (rota) {
+
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
 				std::cout << "*";
 			}
 			else {
@@ -699,21 +676,13 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
-				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
-				std::cout << "*";
 			}
-
 			setCursorPos(20, 20);
-
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
 
 		}
 		else if (entering == DOWN) {
 			system("CLS");
-
-
 
 			showField(*field);
 
@@ -725,22 +694,14 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
-				std::cout << "*";
 			}
 			else {
-				if (coordX < 6) {
+				if (coordX < 8) {
 					coordX += 1;
 				}
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
-				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
-				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
 				std::cout << "*";
 			}
 
@@ -750,24 +711,18 @@ void fillFieldManual(playerField* field)
 
 		}
 		else if (entering == RIGHT) {
-
 			system("CLS");
 
 
 
 			showField(*field);
-
 			if (rota) {
-				if (coordY < 6) {
+				if (coordY < 8) {
 					coordY += 1;
 				}
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
 				std::cout << "*";
 			}
 			else {
@@ -778,19 +733,11 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
-				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
-				std::cout << "*";
 			}
-
 			setCursorPos(20, 20);
-
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
-
 		}
 		else if (entering == LEFT) {
-
 			system("CLS");
 
 			if (coordY > 0) {
@@ -804,72 +751,46 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
-				std::cout << "*";
 			}
 			else {
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
-				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
-				std::cout << "*";
 			}
-
 			setCursorPos(20, 20);
-
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
 		}
 		else if (entering == ENTER) {
 			system("CLS");
 
+
+
 			if (rota) {
 				coordX2 = coordX;
 				coordY2 = coordY + 1;
-				coordX3 = coordX;
-				coordY3 = coordY + 2;
-				coordX4 = coordX;
-				coordY4 = coordY + 3;
 			}
 			else {
 				coordX2 = coordX + 1;
 				coordY2 = coordY;
-				coordX3 = coordX + 2;
-				coordY3 = coordY;
-				coordX4 = coordX + 3;
-				coordY4 = coordY;
 			}
 
-			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2) && checkArea(field, coordX3, coordY3) && checkArea(field, coordX4, coordY4)) {
-				field->field[coordX][coordY] = '#';
+			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2)) {
 				field->field[coordX2][coordY2] = '#';
-				field->field[coordX3][coordY3] = '#';
-				field->field[coordX4][coordY4] = '#';
+				field->field[coordX][coordY] = '#';
 
-				field->ship4[shipNum].size = 4;
-				field->ship4[shipNum].decCoord = new int* [4];
-				field->ship4[shipNum].decCoord[0] = new int[2];
-				field->ship4[shipNum].decCoord[1] = new int[2];
-				field->ship4[shipNum].decCoord[2] = new int[2];
-				field->ship4[shipNum].decCoord[3] = new int[2];
-				field->ship4[shipNum].decCoord[0][0] = coordX;
-				field->ship4[shipNum].decCoord[0][1] = coordY;
-				field->ship4[shipNum].decCoord[1][0] = coordX2;
-				field->ship4[shipNum].decCoord[1][1] = coordY2;
-				field->ship4[shipNum].decCoord[2][0] = coordX3;
-				field->ship4[shipNum].decCoord[2][1] = coordY3;
-				field->ship4[shipNum].decCoord[3][0] = coordX4;
-				field->ship4[shipNum].decCoord[3][1] = coordY4;
-				field->ship4[shipNum].decStat = new bool[4];
-				field->ship4[shipNum].decStat[0] = true;
-				field->ship4[shipNum].decStat[1] = true;
-				field->ship4[shipNum].decStat[2] = true;
-				field->ship4[shipNum].decStat[3] = true;
-				field->ship4[shipNum].genStat = 1;
+				field->ship2[shipNum].size = 2;
+				field->ship2[shipNum].decCoord = new int* [2];
+				field->ship2[shipNum].decCoord[0] = new int[2];
+				field->ship2[shipNum].decCoord[1] = new int[2];
+				field->ship2[shipNum].decCoord[0][0] = coordX;
+				field->ship2[shipNum].decCoord[0][1] = coordX;
+				field->ship2[shipNum].decCoord[1][0] = coordX2;
+				field->ship2[shipNum].decCoord[1][1] = coordY2;
+				field->ship2[shipNum].decStat = new bool[2];
+				field->ship2[shipNum].decStat[0] = true;
+				field->ship2[shipNum].decStat[1] = true;
+				field->ship2[shipNum].genStat = 1;
 				shipNum++;
 				showField(*field);
 			}
@@ -880,10 +801,10 @@ void fillFieldManual(playerField* field)
 		}
 		else if (entering == ROTATION) {
 
-
-			if (coordX + 3 > 9 || coordY * 2 + 4 > 18) {
+			if (coordX + 1 > 9 || coordY * 2 + 2 > 18) {
 				continue;
 			}
+
 			system("CLS");
 
 			showField(*field);
@@ -895,45 +816,116 @@ void fillFieldManual(playerField* field)
 				std::cout << "*";
 				setCursorPos(coordX, coordY * 2 + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
-				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
-				std::cout << "*";
 			}
 			else {
 				setCursorPos(coordX, coordY * 2);
 				std::cout << "*";
 				setCursorPos(coordX + 1, coordY * 2);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
-				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
-				std::cout << "*";
 			}
 
 			setCursorPos(20, 20);
+
 		}
 	}
+
+	//однопалубные
+	shipNum = 0;
+	coordX = 0;
+	coordY = 0;
+
+	std::cout << "Place the ship" << field->playerName << std::endl;
+	std::cout << "*";
+
+	while (shipNum < 4) {
+
+		entering = _getch();
+
+		if (entering == UP) {
+			system("CLS");
+			if (coordX > 0) {
+				coordX -= 1;
+			}
+			showField(*field);
+			setCursorPos(coordX, coordY * 2);
+			std::cout << '*';
+			setCursorPos(20, 20);
+			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+		}
+		else if (entering == DOWN) {
+			system("CLS");
+			if (coordX < 9) {
+				coordX += 1;
+			}
+			showField(*field);
+			setCursorPos(coordX, coordY * 2);
+			std::cout << '*';
+			setCursorPos(20, 20);
+			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+		}
+		else if (entering == RIGHT) {
+			system("CLS");
+			if (coordY < 9) {
+				coordY += 1;
+			}
+			showField(*field);
+			setCursorPos(coordX, coordY * 2);
+			std::cout << '*';
+			setCursorPos(20, 20);
+			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+		}
+		else if (entering == LEFT) {
+			system("CLS");
+			if (coordY > 0) {
+				coordY -= 1;
+			}
+			showField(*field);
+			setCursorPos(coordX, coordY * 2);
+			std::cout << '*';
+			setCursorPos(20, 20);
+			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+		}
+		else if (entering == ENTER) {
+			system("CLS");
+
+			if (checkArea(field, coordX, coordY)) {
+				field->field[coordX][coordY] = '#';
+
+				field->ship1[shipNum].size = 1;
+				field->ship1[shipNum].decCoord = new int* [1];
+				field->ship1[shipNum].decCoord[0] = new int[2];
+				field->ship1[shipNum].decCoord[0][0] = coordX;
+				field->ship1[shipNum].decCoord[0][1] = coordY;
+				field->ship1[shipNum].decStat = new bool[1];
+				field->ship1[shipNum].decStat[0] = true;
+				field->ship1[shipNum].genStat = 1;
+				shipNum++;
+				showField(*field);
+			}
+			else {
+				showField(*field);
+				std::cout << "Wrong position!";
+			}
+		}
+	}
+
 }
 
+//+заполнение полей автоматически
 void fillFieldAutomatic(playerField* field)
 {
 	system("CLS");
-
 	int coordX, coordY, dir, shipNum;
-
 	//однопалубные
 
 	shipNum = 0;
 
 	while (shipNum < 4) {
-
 		coordX = rand() % 10;
 		coordY = rand() % 10;
 
 		if (checkArea(field, coordX, coordY)) {
 			field->field[coordX][coordY] = '#';
-
 			field->ship1[shipNum].size = 1;
 			field->ship1[shipNum].decCoord = new int* [1];
 			field->ship1[shipNum].decCoord[0] = new int[2];
@@ -951,7 +943,6 @@ void fillFieldAutomatic(playerField* field)
 	shipNum = 0;
 
 	while (shipNum < 3) {
-
 		coordX = rand() % 10;
 		coordY = rand() % 10;
 		dir = rand() % 4;
@@ -980,8 +971,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship2[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else if (dir == 1) {
+			} else if (dir == 1) {
 				if (checkArea(field, coordX + 1, coordY)) {
 					field->field[coordX + 1][coordY] = '#';
 					field->field[coordX][coordY] = '#';
@@ -1000,8 +990,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship2[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else if (dir == 2) {
+			} else if (dir == 2) {
 				if (checkArea(field, coordX, coordY - 1)) {
 					field->field[coordX][coordY - 1] = '#';
 					field->field[coordX][coordY] = '#';
@@ -1020,8 +1009,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship2[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else {
+			} else {
 				if (checkArea(field, coordX, coordY + 1)) {
 					field->field[coordX][coordY + 1] = '#';
 					field->field[coordX][coordY] = '#';
@@ -1083,8 +1071,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship3[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else if (dir == 1) {
+			} else if (dir == 1) {
 				if (checkArea(field, coordX + 1, coordY) && checkArea(field, coordX + 2, coordY)) {
 					field->field[coordX + 1][coordY] = '#';
 					field->field[coordX + 2][coordY] = '#';
@@ -1108,8 +1095,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship3[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else if (dir == 2) {
+			} else if (dir == 2) {
 				if (checkArea(field, coordX, coordY - 1) && checkArea(field, coordX, coordY - 2)) {
 					field->field[coordX][coordY - 1] = '#';
 					field->field[coordX][coordY - 2] = '#';
@@ -1133,8 +1119,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship3[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else {
+			} else {
 				if (checkArea(field, coordX, coordY + 1) && checkArea(field, coordX, coordY + 2)) {
 					field->field[coordX][coordY + 1] = '#';
 					field->field[coordX][coordY + 2] = '#';
@@ -1159,10 +1144,7 @@ void fillFieldAutomatic(playerField* field)
 					shipNum++;
 				}
 			}
-
-
 		}
-
 	}
 
 	//четырёхпалубные
@@ -1170,7 +1152,6 @@ void fillFieldAutomatic(playerField* field)
 	shipNum = 0;
 
 	while (shipNum < 1) {
-
 		coordX = rand() % 10;
 		coordY = rand() % 10;
 		dir = rand() % 4;
@@ -1209,8 +1190,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship4[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else if (dir == 1) {
+			} else if (dir == 1) {
 				if (checkArea(field, coordX + 1, coordY) && checkArea(field, coordX + 2, coordY) && checkArea(field, coordX + 3, coordY)) {
 					field->field[coordX + 1][coordY] = '#';
 					field->field[coordX + 2][coordY] = '#';
@@ -1239,8 +1219,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship4[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else if (dir == 2) {
+			} else if (dir == 2) {
 				if (checkArea(field, coordX, coordY - 1) && checkArea(field, coordX, coordY - 2) && checkArea(field, coordX, coordY - 3)) {
 					field->field[coordX][coordY - 1] = '#';
 					field->field[coordX][coordY - 2] = '#';
@@ -1269,8 +1248,7 @@ void fillFieldAutomatic(playerField* field)
 					field->ship4[shipNum].genStat = 1;
 					shipNum++;
 				}
-			}
-			else {
+			} else {
 				if (checkArea(field, coordX, coordY + 1) && checkArea(field, coordX, coordY + 2) && checkArea(field, coordX, coordY + 3)) {
 					field->field[coordX][coordY + 1] = '#';
 					field->field[coordX][coordY + 2] = '#';
@@ -1304,7 +1282,7 @@ void fillFieldAutomatic(playerField* field)
 	}
 }
 
-/*Простой вывод поля без прекрас*/
+//-вывод поля для заполнения кораблями вручную
 void showField(playerField field)
 {
 	for (int i = 0; i < 10; i++) {
@@ -1316,6 +1294,7 @@ void showField(playerField field)
 	}
 }
 
+//+установка курсора в переданную позицию по координатам
 void setCursorPos(int y, int x)
 {
 	HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -1323,19 +1302,14 @@ void setCursorPos(int y, int x)
 	SetConsoleCursorPosition(output, pos);
 }
 
+//-показывает оба игровых поля
 void showFields(playerField* field1, playerField* field2)
 {
 
-	//сами поля
-	//очерёдность хода
-	//статистика по кораблям внизу
-	//имена игроков над полями
-	//"вызов" прицела попробовать вызвать изменение позиции курсора отдельной функцией и тд и тп
-	//sea - 177, ships - 254, destr - 206, miss - 153
 	char sea = 176;
 	char ship = 254;
 	char destr = 206;
-	char miss = 153;
+	char miss = 176;
 	char mist = 178;
 
 	std::cout << "\n\n\n";
@@ -1346,27 +1320,22 @@ void showFields(playerField* field1, playerField* field2)
 
 		i != 9 ? std::cout << "\t\t\t " << i + 1 << " " : std::cout << "\t\t\t" << i + 1 << " ";
 
-
 		for (int c = 0; c < 10; c++) {
 			if (field1->field[i][c] == '~' || field1->field[i][c] == '0') {
 				std::cout << sea << " ";
-			}
-			else if (field1->field[i][c] == '#') {
+			} else if (field1->field[i][c] == '#') {
 				std::cout << ship << " ";
-			}
-			else {
+			} else {
 				std::cout << field1->field[i][c] << " ";
 			}
-
 		}
 
 		std::cout << "\t\t";
 		i != 9 ? std::cout << " " << i + 1 << " " : std::cout << i + 1 << " ";
 
 		for (int c = 0; c < 10; c++) {
-
 			if (field2->field[i][c] == '~' || field2->field[i][c] == '#') {
-				std::cout << mist << " ";
+				std::cout << mist << " ";  //заменить на mist - туман войны
 			}
 			else if (field2->field[i][c] == '0') {
 				std::cout << miss << " ";
@@ -1380,7 +1349,7 @@ void showFields(playerField* field1, playerField* field2)
 	}
 
 	std::cout << std::endl;
-	std::cout << "   Remaining ships: \t\t   Remaining ships: " << std::endl;
+	std::cout << "\t\t\t   Remaining ships: \t\t   Remaining ships: " << std::endl;
 	std::cout << " Single-deck - " << field1->ship1[0].genStat + field1->ship1[1].genStat + field1->ship1[2].genStat + field1->ship1[3].genStat;
 	std::cout << "\t\t Single-deck - " << field2->ship1[0].genStat + field2->ship1[1].genStat + field2->ship1[2].genStat + field2->ship1[3].genStat << std::endl;
 	std::cout << " Double-deck - " << field1->ship2[0].genStat + field1->ship2[1].genStat + field1->ship2[2].genStat;
@@ -1391,7 +1360,8 @@ void showFields(playerField* field1, playerField* field2)
 	std::cout << "\t\t\t Four-deck - " << field2->ship4[0].genStat << std::endl;
 
 }
-
+//пока не решил что делать с этим
+/* 
 void makeShoot(playerField* field1, playerField* field2)
 {
 	int modX = 1, modY = 35;
@@ -1515,6 +1485,7 @@ bool shootChecker(playerField* field, int x, int y)
 
 
 }
+*/
 
 void mainMenu(playerField* field_1, playerField* field_2)
 {
@@ -1541,7 +1512,7 @@ void mainMenu(playerField* field_1, playerField* field_2)
 					system("CLS");
 
 					std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Player vs player." << std::endl;
-					std::cout << "\t\t\t\t\t2. Player vs PC." << std::endl;
+					std::cout << "\t\t\t\t\t2. Player vs PC ." << std::endl;
 					std::cout << "\t\t\t\t\t3. PC vs PC." << std::endl;
 					std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 
@@ -1566,14 +1537,14 @@ void mainMenu(playerField* field_1, playerField* field_2)
 										fillFieldManual(field_1);
 										//функция для ручного расставления кораблей для игрока 2
 										fillFieldManual(field_2);
-										startGame(field_1, field_2);
+										startGame(field_1, field_2, 0);
 										break;
 									case '2':
 										//функция для автоматического расставления кораблей для игрока 1
 										fillFieldAutomatic(field_1);
 										//функция для автоматического расставления кораблей для игрока 2
 										fillFieldAutomatic(field_2);
-										startGame(field_1, field_2);
+										startGame(field_1, field_2, 0);
 										break;
 									case '0':
 										exit = false;
@@ -1584,6 +1555,7 @@ void mainMenu(playerField* field_1, playerField* field_2)
 								
 							break;
 							case '2':	//игрок против PC
+								system("CLS");
 								std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
 								std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
 								std::cout << "\t\t\t\t\t0. Exit." << std::endl;
@@ -1593,13 +1565,19 @@ void mainMenu(playerField* field_1, playerField* field_2)
 								switch (choose) {
 									case '1':
 										//функция для ручного расставления кораблей для игрока 1
+										fillFieldManual(field_1);
 										//функция для автоматического расставления кораблей для PC
+										fillFieldAutomatic(field_2);
 										//запуск игры с переданными полями
+										startGame(field_1, field_2, 1);
 										break;
 									case '2':
 										//функция для автоматического расставления кораблей для игрока 1
+										fillFieldAutomatic(field_1);
 										//функция для автоматического расставления кораблей для PC
+										fillFieldAutomatic(field_2);
 										//запуск игры с переданными полями
+										startGame(field_1, field_2, 1);
 										break;
 									case '0':
 										exit = false;
@@ -1629,7 +1607,7 @@ void mainMenu(playerField* field_1, playerField* field_2)
 		
 	}
 }
-
+//+задаёт размер окна консоли
 void consoleSize()
 {
 	CONSOLE_SCREEN_BUFFER_INFOEX consolesize;
@@ -1652,7 +1630,8 @@ void consoleSize()
 
 	SetConsoleScreenBufferInfoEx(hConsole, &consolesize);
 }
-//рандомно ищёт корабли на поле, возвращает true в случае удачного выстрела
+
+//-рандомно ищёт корабли на поле, возвращает true в случае удачного выстрела, выводит информацию о попадании или промахе
 bool terminator_1(playerField* field){
 
 	while (true) {
@@ -1661,43 +1640,63 @@ bool terminator_1(playerField* field){
 
 		if (field->field[x][y] == '~') {
 			field->field[x][y] = '0';
+			system("CLS");
 			std::cout << "Miss!";
+			Sleep(2000);
 			return false;
 		}
 		else if (field->field[x][y] == '#') {
 			field->field[x][y] = 'X';
+			accountant(field, x, y);
+			system("CLS");
 			std::cout << "Hit!";
+			Sleep(2000);
 			return true;
 		}
 	}
 }
-//"умный" бот, , возвращает true в случае удачного выстрела
-bool terminator_2(playerField*) { return true; }
 
-void startGame(playerField* field1, playerField* field2)
+//-"умный" бот, , возвращает true в случае удачного выстрела
+bool terminator_2(playerField* field) { 
+	
+
+	
+	
+	
+	return true; 
+}
+
+//-начинает игру с переданными параметрами
+void startGame(playerField* field1, playerField* field2, int mode)
 {
-	//пока есть корабли или не нажата кнопка выхода 
-		//игроку1 предлагается сделать выстрел (если это человек, то выхывается функция нацеливания)
-			//если попал, выводится сообщение о попадании
-				//если у противника не осталось кораблей, то игра заканчивается, и выводится сообщение о победе
-			//если промазал, то ход передаётся игроку2
 
+	//modes - 0 - игрок против игрока, 1 - игрок против PC, 2 - PC против PC
 	system("CLS");
-
-	while (true) {  //функция, возвращающая количество оставшихся кораблей, если у одного из игроков кораблей не осталось, то возвращается false
-		while (shooter(field1, field2)) {
-			std::cout << "MIIIIIIIS";
-			system("PAUSE");
+	if (mode == 0) {
+		while (winChecker(field1, field2)) {
+			while (shooter(field1, field2)) {
+			}
+			while (shooter(field2, field1)) {
+			}
 		}
-
-		while (shooter(field2, field1)) {
-			std::cout << "MIIIIIIIS";
-			system("PAUSE");
+	}
+	else if (mode == 1) {
+		while (winChecker(field1, field2)) {
+			while (shooter(field1, field2)) {
+			}
+			while (terminator_1(field1)) {
+			}
 		}
+	}
+	else if (mode == 2) {
 
 	}
+	else {
+		std::cout << "Error in block \"startGame\"";
+	}
 }
-//предоставляет возможность игроку сделать выстрел
+
+//-предоставляет возможность игроку сделать выстрел
 bool shooter(playerField* field1, playerField* field2)
 {
 	
@@ -1708,7 +1707,7 @@ bool shooter(playerField* field1, playerField* field2)
 	coordX = 5;
 	coordY = 59;
 
-	while (true) {
+	while (winChecker(field1, field2)) {
 		system("CLS");
 
 		showFields(field1, field2);
@@ -1721,104 +1720,132 @@ bool shooter(playerField* field1, playerField* field2)
 		entering = _getch();
 
 		if (entering == UP) {
-			system("CLS");
 			if (coordX > 5) {
 				coordX -= 1;
 			}
-		}
-		else if (entering == DOWN) {
-			system("CLS");
+		} else if (entering == DOWN) {
 			if (coordX < 14) {
 				coordX += 1;
 			}
-		}
-		else if (entering == RIGHT) {
-			system("CLS");
+		} else if (entering == RIGHT) {
 			if (coordY < 77) {
 				coordY += 2;
 			}
-		}
-		else if (entering == LEFT) {
-			system("CLS");
+		} else if (entering == LEFT) {
 			if (coordY > 59) {
 				coordY -= 2;
 			}
-		}
-		else if (entering == ENTER) {
-
+		} else if (entering == ENTER) {
 			if (field2->field[coordX - 5][(coordY - 59) / 2] == '#') {
-				//функция, для поиска и записи состояния о корабле
+				field2->amount--;
 				field2->field[coordX - 5][(coordY - 59) / 2] = 'X';
+				accountant(field2, coordX - 5, (coordY - 59) / 2);
+				system("CLS");
 				std::cout << "Nice shoot!" << std::endl;
-			}
-			else if(field2->field[coordX - 5][(coordY - 59) / 2] == 'X' || field2->field[coordX - 5][(coordY - 59) / 2] == '0') {
-				std::cout << "Try again." << std::endl;
-			}
-			else {
+				Sleep(2000);
+			} else if(field2->field[coordX - 5][(coordY - 59) / 2] == '~') {
 				field2->field[coordX - 5][(coordY - 59) / 2] = '0';
-				std::cout << "Miss." << std::endl;
+				system("CLS");
+				std::cout << "You miss!" << std::endl;
+				Sleep(2000);
 				return false;
 			}
-
-
 		}
 	}
-
-
-
-
-
 }
 
+//-производит проверку выйгрыша в игре (окончания)
 bool winChecker(playerField* field1, playerField* field2)
 {
+	if (field1->amount == 0) {
+		std::cout << field2->playerName << " is wictory!!!";
+		return false;
+	}
 
+	if (field2->amount == 0) {
+		std::cout << field1->playerName << " is wictory!!!";
+		return false;
+	}
+
+	return true;
 }
 
-void accountant(playerField field, int x, int y)
+//+заносит информацию о поражении корабля по координатам, записывает информацию, если корабль уничтожен, и вызывает функцию для заполнения полей вокруг уничтоженнго корабля
+void accountant(playerField* field, int x, int y)
 {
-
 	//однопалубники
-
-	for (int i = 0; i < 4; i++) {
-		if (field.ship1[i].decCoord[0][0] == x && field.ship1[i].decCoord[0][0] == y) {
-			field.ship1[i].decStat = false;
-			field.ship1[i].genStat = 0;
-		}
-	}
-
-	//двухпалубники
-
-	for (int i = 0; i < 3; i++) {
-		for (int c = 0; c < 2; c++) {
-			field.ship2[i].decCoord[c][0] == x && field.ship2[i].decCoord[c][1] == y;
-			field.ship1[i].decStat = false;
+		for (int i = 0; i < 4; i++) {
+			if (field->ship1[i].genStat == 0) continue;  // пропуск, если корабль уже уничтожен
+			if (field->ship1[i].decCoord[0][0] == x && field->ship1[i].decCoord[0][1] == y) {
+				field->ship1[i].decStat[0] = false;
+				field->ship1[i].genStat = 0;
+				arealMarker(field, field->ship1[i]);
+				return;
+			}
 		}
 
-	}
+		//двухпалубники
+		for (int i = 0; i < 3; i++) {
+			if (field->ship2[i].genStat == 0) continue;  // пропуск, если корабль уже уничтожен
+			for (int c = 0; c < 2; c++) {
+				if (field->ship2[i].decCoord[c][0] == x && field->ship2[i].decCoord[c][1] == y) {
+					std::cout << "\n" << x << "   " << y << std::endl;
+					std::cout << field->ship2[i].decCoord[c][0] << "  " << field->ship2[i].decCoord[c][1] << std::endl;
+					field->ship2[i].decStat[c] = false;
+				}
+			}
+			if (field->ship2[i].decStat[0] == false && field->ship2[i].decStat[1] == false) {
+				field->ship2[i].genStat = 0;
+				arealMarker(field, field->ship2[i]);
+				return;
+			}
+		}
+		
+		//трёхпалубники
+		for (int i = 0; i < 2; i++) {
+			if (field->ship3[i].genStat == 0) continue;  // пропуск, если корабль уже уничтожен
+			for (int c = 0; c < 3; c++) {
+				if (field->ship3[i].decCoord[c][0] == x && field->ship3[i].decCoord[c][1] == y) {
+					field->ship3[i].decStat[c] = false;
+				}
+			}
+			if (field->ship3[i].decStat[0] == false && field->ship3[i].decStat[1] == false && field->ship3[i].decStat[2] == false) {
+				field->ship3[i].genStat = 0;
+				arealMarker(field, field->ship3[i]);
+				return;
+			}
+		}
 
-	//трёхпалубники
+		//четырехпалубник
+		if (!(field->ship4[0].genStat == 0)) {
+			for (int c = 0; c < 4; c++) {
+				if (field->ship4[0].decCoord[c][0] == x && field->ship4[0].decCoord[c][1] == y) {
+					field->ship4[0].decStat[c] = false;
+				}
+			}
+			if (field->ship4[0].decStat[0] == false && field->ship4[0].decStat[1] == false && field->ship4[0].decStat[2] == false && field->ship4[0].decStat[3] == false) {
+				field->ship4[0].genStat = 0;
+				arealMarker(field, field->ship4[0]);
+				return;
+			}
+		}
+}
 
-	for (int i = 0; i < 2; i++) {
-		if (field.ship1[i].decCoord[0][0] == x || field.ship1[i].decCoord[0][0] == y) {
-			field.ship1[i].decStat = false;
-			field.ship1[i].genStat = 0;
+//+заполянет поля вокруг уничтоженного корабля
+void arealMarker(playerField* field, ship ship)
+{
+	for (int i = 0; i < ship.size; i++) {
+		for (int g = ship.decCoord[i][0] - 1; g <= ship.decCoord[i][0] + 1; g++) {
+			for (int c = ship.decCoord[i][1] - 1; c <= ship.decCoord[i][1] + 1; c++) {
+				if (g < 0 || c < 0 || g > 9 || c > 9 || field->field[g][c] == 'X') {
+					continue;
+				}
+				else {
+					field->field[g][c] = '0';
+				}
+			}
 		}
 	}
-
-	//четырехпалубники
-
-	for (int i = 0; i < 4; i++) {
-		if (field.ship1[i].decCoord[0][0] == x || field.ship1[i].decCoord[0][0] == y) {
-			field.ship1[i].decStat = false;
-			field.ship1[i].genStat = 0;
-		}
-	}
-
-
-
 }
 
 
-//заполянет поля вокруг корабля, просто принимая его (там уже содержатся координаты и прочее
-//функция, проверяющая потоплен ли корабль в который попали, или нет

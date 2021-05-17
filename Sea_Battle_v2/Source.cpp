@@ -8,7 +8,6 @@
 //кондиции завершения игры
 //произведение выстрела противником с сложным ии
 //специальные кнопки для досрочного завершения игры и выхода в главное меню
-//разборка с освобождением памяти
 //вычищение мусора из кода и комментирование
 //оптимизация и сокращение кода
 
@@ -22,7 +21,7 @@
 //ввод именю игрока -> возможность выбора "рандомного" для PC (тип Железный Ублюдок) 
 //кнопка "назад" для меню
 //выбор пунктов меню с помощью стрелок на клавиатуре 
-//подсветка пунктов меню при выборе + при выборе появление стрелки влева "->"
+//подсветка пунктов меню при выборе + при выборе появление стрелки влево "->"
 //звук перемещения по пунктам меню
 // 
 //	звук
@@ -50,9 +49,8 @@
 #include <iostream>
 #include <string>
 #include <Windows.h>
-#include <thread>
 #include <conio.h>
-#pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "winmm.lib")  //для вывода звука
 
 
 struct ship {
@@ -84,12 +82,12 @@ playerField createPlayerField(); //создаёт экземпляр струк�
 bool checkArea(playerField*, int, int); //проверяет окресности переданной точки на переданном поле
 void fillFieldAutomatic(playerField*);
 void fillFieldManual(playerField*);
-void showField(playerField);
+void showField(playerField*);
 void setCursorPos(int, int);
 void showFields(playerField*, playerField*);
 //void makeShoot(playerField*, playerField*);
 //bool shootChecker(playerField*, int, int);
-//void game(); //входят функции intro, mainMenu
+//void game(); //входят функции intro, mainMenu все функции для игры
 void mainMenu(playerField*, playerField*);
 void consoleSize(); //задаёт размер окна
 bool terminator_1(playerField*);
@@ -120,7 +118,8 @@ int main()
 	playerField field_2 = createPlayerField();
 	playerField* field_2_ptr = &field_2;
 
-	intro();
+	//fillFieldManual(field_1_ptr);
+	//intro();
 	while (_kbhit()) _getch();  //для игнорирования "случайного" воода во время заставки, чтобы он не отразился на вводе в меню
 	mainMenu(field_1_ptr, field_2_ptr);
 
@@ -168,22 +167,19 @@ void fillFieldManual(playerField* field)
 	system("CLS");
 
 	int coordX, coordY, shipNum, coordX2, coordY2, coordX3, coordY3, coordX4, coordY4;
-	char** tempField = field->field;
+
 	char entering;
 	bool rota = true;
 	enum { UP = 72, DOWN = 80, RIGHT = 77, LEFT = 75, ENTER = '\r', ROTATION = 'r' };
 
-	std::cout << "Place the ship" << field->playerName << std::endl;
-	
-	setCursorPos(3, 0);
-	showField(*field);
-	setCursorPos(3, 0);
+	showField(field);
+	setCursorPos(8, 35);
 	std::cout << "* * * *";
 	
 	//четырёхпалубные
 	shipNum = 0;
-	coordX = 0;
-	coordY = 0;
+	coordX = 8;
+	coordY = 35;
 
 
 	while (shipNum < 1) {
@@ -194,148 +190,152 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			if (coordX > 0) {
+			if (coordX > 8) {
 				coordX -= 1;
 			}
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
+				setCursorPos(coordX, coordY + 4);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
+				setCursorPos(coordX, coordY + 6);
 				std::cout << "*";
 			}
 			else {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
+				setCursorPos(coordX + 2, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
+				setCursorPos(coordX + 3, coordY);
 				std::cout << "*";
 			}
 
 			setCursorPos(20, 20);
 
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+			std::cout << "coordX = " << coordX - 8 << " coordY = " << (coordY - 35) / 2 << std::endl;
 
 		}
 		else if (entering == DOWN) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
-				if (coordX < 9) {
+				if (coordX < 17) {
 					coordX += 1;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
+				setCursorPos(coordX, coordY + 4);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
+				setCursorPos(coordX, coordY + 6);
 				std::cout << "*";
 			}
 			else {
-				if (coordX < 6) {
+				if (coordX < 14) {
 					coordX += 1;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
+				setCursorPos(coordX + 2, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
+				setCursorPos(coordX + 3, coordY);
 				std::cout << "*";
 			}
 
 			setCursorPos(20, 20);
 
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+			std::cout << "coordX = " << coordX - 8 << " coordY = " << (coordY - 35) / 2 << std::endl;
 
 		}
 		else if (entering == RIGHT) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
-				if (coordY < 6) {
-					coordY += 1;
+				if (coordY < 46) {
+					coordY += 2;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
+				setCursorPos(coordX, coordY + 4);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
+				setCursorPos(coordX, coordY + 6);
 				std::cout << "*";
 			}
 			else {
-				if (coordY < 9) {
-					coordY += 1;
+				if (coordY < 53) {
+					coordY += 2;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
+				setCursorPos(coordX + 2, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
+				setCursorPos(coordX + 3, coordY);
 				std::cout << "*";
 			}
 
 			setCursorPos(20, 20);
 
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+			std::cout << "coordX = " << coordX - 8 << " coordY = " << (coordY - 35) / 2 << std::endl;
 
 		}
 		else if (entering == LEFT) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			if (coordY > 0) {
-				coordY -= 1;
+			if (coordY > 35) {
+				coordY -= 2;
 			}
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
+				setCursorPos(coordX, coordY + 4);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
+				setCursorPos(coordX, coordY + 6);
 				std::cout << "*";
 			}
 			else {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
+				setCursorPos(coordX + 2, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
+				setCursorPos(coordX + 3, coordY);
 				std::cout << "*";
 			}
 
 			setCursorPos(20, 20);
 
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
+			std::cout << "coordX = " << coordX - 8 << " coordY = " << (coordY - 35) / 2 << std::endl;
 		}
 		else if (entering == ENTER) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
@@ -358,7 +358,7 @@ void fillFieldManual(playerField* field)
 				coordY4 = coordY;
 			}
 
-			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2) && checkArea(field, coordX3, coordY3) && checkArea(field, coordX4, coordY4)) {
+			if (checkArea(field, coordX - 8, (coordY - 35) / 2) && checkArea(field, coordX2 - 8, (coordY2 - 35) / 2) && checkArea(field, coordX3 - 8, (coordY3 - 35) / 2) && checkArea(field, coordX4 - 8, (coordY4 - 35) / 2)) {
 				field->field[coordX][coordY] = '#';
 				field->field[coordX2][coordY2] = '#';
 				field->field[coordX3][coordY3] = '#';
@@ -385,42 +385,44 @@ void fillFieldManual(playerField* field)
 				field->ship4[shipNum].decStat[3] = true;
 				field->ship4[shipNum].genStat = 1;
 				shipNum++;
-				showField(*field);
+				showField(field);
 			}
 			else {
-				showField(*field);
+				showField(field);
 				PlaySound(TEXT("musica\\error.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
 		else if (entering == ROTATION) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
-			if (coordX + 3 > 9 || coordY * 2 + 4 > 18) {
+
+			if (coordX + 3 > 17 || coordY + 4 > 52) {
 				continue;
 			}
+
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 
 			rota = !rota;
 
 			if (rota) {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 4);
+				setCursorPos(coordX, coordY + 4);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 6);
+				setCursorPos(coordX, coordY + 6);
 				std::cout << "*";
 			}
 			else {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 2, coordY * 2);
+				setCursorPos(coordX + 2, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 3, coordY * 2);
+				setCursorPos(coordX + 3, coordY);
 				std::cout << "*";
 			}
 			setCursorPos(20, 20);
@@ -446,7 +448,7 @@ void fillFieldManual(playerField* field)
 				coordX -= 1;
 			}
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
 				setCursorPos(coordX, coordY * 2);
@@ -474,7 +476,7 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
 				if (coordX < 9) {
@@ -507,7 +509,7 @@ void fillFieldManual(playerField* field)
 		else if (entering == RIGHT) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
-			showField(*field);
+			showField(field);
 
 			if (rota) {
 				if (coordY < 7) {
@@ -545,7 +547,7 @@ void fillFieldManual(playerField* field)
 				coordY -= 1;
 			}
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
 				setCursorPos(coordX, coordY * 2);
@@ -607,10 +609,10 @@ void fillFieldManual(playerField* field)
 				field->ship3[shipNum].decStat[2] = true;
 				field->ship3[shipNum].genStat = 1;
 				shipNum++;
-				showField(*field);
+				showField(field);
 			}
 			else {
-				showField(*field);
+				showField(field);
 				PlaySound(TEXT("musica\\error.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
@@ -622,7 +624,7 @@ void fillFieldManual(playerField* field)
 			}
 
 			system("CLS");
-			showField(*field);
+			showField(field);
 
 			rota = !rota;
 
@@ -666,7 +668,7 @@ void fillFieldManual(playerField* field)
 				coordX -= 1;
 			}
 
-			showField(*field);
+			showField(field);
 			if (rota) {
 
 				setCursorPos(coordX, coordY * 2);
@@ -688,7 +690,7 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
 				if (coordX < 9) {
@@ -718,7 +720,7 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 			if (rota) {
 				if (coordY < 8) {
 					coordY += 1;
@@ -748,7 +750,7 @@ void fillFieldManual(playerField* field)
 				coordY -= 1;
 			}
 
-			showField(*field);
+			showField(field);
 
 			if (rota) {
 				setCursorPos(coordX, coordY * 2);
@@ -795,10 +797,10 @@ void fillFieldManual(playerField* field)
 				field->ship2[shipNum].decStat[1] = true;
 				field->ship2[shipNum].genStat = 1;
 				shipNum++;
-				showField(*field);
+				showField(field);
 			}
 			else {
-				showField(*field);
+				showField(field);
 				PlaySound(TEXT("musica\\error.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
@@ -810,7 +812,7 @@ void fillFieldManual(playerField* field)
 
 			system("CLS");
 
-			showField(*field);
+			showField(field);
 
 			rota = !rota;
 
@@ -850,7 +852,7 @@ void fillFieldManual(playerField* field)
 			if (coordX > 0) {
 				coordX -= 1;
 			}
-			showField(*field);
+			showField(field);
 			setCursorPos(coordX, coordY * 2);
 			std::cout << '*';
 			setCursorPos(20, 20);
@@ -862,7 +864,7 @@ void fillFieldManual(playerField* field)
 			if (coordX < 9) {
 				coordX += 1;
 			}
-			showField(*field);
+			showField(field);
 			setCursorPos(coordX, coordY * 2);
 			std::cout << '*';
 			setCursorPos(20, 20);
@@ -874,7 +876,7 @@ void fillFieldManual(playerField* field)
 			if (coordY < 9) {
 				coordY += 1;
 			}
-			showField(*field);
+			showField(field);
 			setCursorPos(coordX, coordY * 2);
 			std::cout << '*';
 			setCursorPos(20, 20);
@@ -886,7 +888,7 @@ void fillFieldManual(playerField* field)
 			if (coordY > 0) {
 				coordY -= 1;
 			}
-			showField(*field);
+			showField(field);
 			setCursorPos(coordX, coordY * 2);
 			std::cout << '*';
 			setCursorPos(20, 20);
@@ -908,10 +910,10 @@ void fillFieldManual(playerField* field)
 				field->ship1[shipNum].decStat[0] = true;
 				field->ship1[shipNum].genStat = 1;
 				shipNum++;
-				showField(*field);
+				showField(field);
 			}
 			else {
-				showField(*field);
+				showField(field);
 				PlaySound(TEXT("musica\\error.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
@@ -1291,23 +1293,34 @@ void fillFieldAutomatic(playerField* field)
 }
 
 //-вывод поля для заполнения кораблями вручную
-void showField(playerField field)
+void showField(playerField* field)
 {
+	char sea = 176;
+	char ship = 254;
+
+	std::cout << "\n\n\n\n\n\t\t\t\t    Arrange the ships." << std::endl;
+	std::cout << "\t\t\t\t\t" << field->playerName << std::endl;
+
+	std::cout << "\t\t\t\t   A B C D E F G H I J" << std::endl;
+
 	for (int i = 0; i < 10; i++) {
-		for (int c = 0; c < 10; c++)
-		{
-			std::cout << field.field[i][c] << " ";
+		i != 9 ? std::cout << "\t\t\t\t " << i + 1 << " " : std::cout << "\t\t\t\t" << i + 1 << " ";
+		for (int c = 0; c < 10; c++){
+			if (field->field[i][c] == '~') {
+				SetConsoleTextAttribute(hConsole, 9);
+				std::cout << sea << " ";
+			} else if (field->field[i][c] == '#') {
+				SetConsoleTextAttribute(hConsole, 10);
+				std::cout << ship << " ";
+			} else {
+				std::cout << field->field[i][c] << " ";
+			}
+			SetConsoleTextAttribute(hConsole, 7);
 		}
 		std::cout << std::endl;
 	}
-}
 
-//+установка курсора в переданную позицию по координатам
-void setCursorPos(int y, int x)
-{
-	HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD pos = { x, y };
-	SetConsoleCursorPosition(output, pos);
+	std::cout << "\n\t\t\t\tr - for rotation, arrow keys for navigation" << std::endl;
 }
 
 //-показывает оба игровых поля
@@ -1332,14 +1345,16 @@ void showFields(playerField* field1, playerField* field2)
 			if (field1->field[i][c] == '~' || field1->field[i][c] == '0') {
 				SetConsoleTextAttribute(hConsole, 9);
 				std::cout << sea << " ";
-			} else if (field1->field[i][c] == '#') {
+			}
+			else if (field1->field[i][c] == '#') {
 				SetConsoleTextAttribute(hConsole, 10);
 				std::cout << ship << " ";
 			}
 			else if (field1->field[i][c] == 'X') {
 				SetConsoleTextAttribute(hConsole, 4);
 				std::cout << field1->field[i][c] << " ";
-			} else {
+			}
+			else {
 				std::cout << field1->field[i][c] << " ";
 			}
 		}
@@ -1361,7 +1376,8 @@ void showFields(playerField* field1, playerField* field2)
 			else if (field2->field[i][c] == 'X') {
 				SetConsoleTextAttribute(hConsole, 4);
 				std::cout << field2->field[i][c] << " ";
-			} else {
+			}
+			else {
 				std::cout << field2->field[i][c] << " ";
 			}
 		}
@@ -1382,6 +1398,14 @@ void showFields(playerField* field1, playerField* field2)
 	std::cout << " Four-deck - " << field1->ship4[0].genStat;
 	std::cout << "\t\t\t Four-deck - " << field2->ship4[0].genStat << std::endl;
 
+}
+
+//+установка курсора в переданную позицию по координатам
+void setCursorPos(int y, int x)
+{
+	HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD pos = { x, y };
+	SetConsoleCursorPosition(output, pos);
 }
 
 //пока не решил что делать с этим
@@ -1555,7 +1579,6 @@ void mainMenu(playerField* field_1, playerField* field_2)
 								std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
 								std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
 								std::cout << "\t\t\t\t\t3. Enter the names." << std::endl;  //ручной ввод имён игроков, в противном случае будут просто player1 и player2
-
 								std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 
 								choose = _getch();
@@ -1645,9 +1668,9 @@ void mainMenu(playerField* field_1, playerField* field_2)
 				default:
 					break;
 			}
-		
 	}
 }
+
 //+задаёт размер окна консоли
 void consoleSize()
 {
@@ -1833,7 +1856,6 @@ void accountant(playerField* field, int x, int y)
 			if (field->ship2[i].genStat == 0) continue;  // пропуск, если корабль уже уничтожен
 			for (int c = 0; c < 2; c++) {
 				if (field->ship2[i].decCoord[c][0] == x && field->ship2[i].decCoord[c][1] == y) {
-					std::cout << "\n" << x << "   " << y << std::endl;
 					std::cout << field->ship2[i].decCoord[c][0] << "  " << field->ship2[i].decCoord[c][1] << std::endl;
 					field->ship2[i].decStat[c] = false;
 				}
@@ -1919,9 +1941,7 @@ void intro()
 							"  \\______/ \\________|\\__|  \\__|      \\_______/ \\__|  \\__|  \\__|      \\__|   \\________|\\________|" };
 
 	for (int i = 0; i < 15; i++) {
-
 		for (auto str : logo) {
-
 			SetConsoleTextAttribute(hConsole, rand() % 15 + 1);
 
 			std::cout << str << std::endl;
@@ -1935,5 +1955,4 @@ void intro()
 
 		system("CLS");
 	}
-	return;
 }

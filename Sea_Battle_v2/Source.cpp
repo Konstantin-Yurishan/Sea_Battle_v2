@@ -581,38 +581,34 @@ void fillFieldManual(playerField* field)
 			system("CLS");
 
 			if (rota) {
-				coordX = coordX - 8;
-				coordY = (coordY - 35) / 2;
 				coordX2 = coordX;
-				coordY2 = coordY + 1;
+				coordY2 = coordY + 2;
 				coordX3 = coordX;
-				coordY3 = coordY + 2;
+				coordY3 = coordY + 4;
 			}
 			else {
-				coordX = coordX - 8;
-				coordY = (coordY - 35) / 2;
-				coordX2 = coordX;
-				coordY2 = coordY + 1;
-				coordX3 = coordX;
-				coordY3 = coordY + 2;
+				coordX2 = coordX + 1;
+				coordY2 = coordY;
+				coordX3 = coordX + 2;
+				coordY3 = coordY;
 			}
 
-			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2) && checkArea(field, coordX3, coordY3)) {
-				field->field[coordX][coordY] = '#';
-				field->field[coordX2][coordY2] = '#';
-				field->field[coordX3][coordY3] = '#';
+			if (checkArea(field, coordX - 8, (coordY - 35) / 2) && checkArea(field, coordX2 - 8, (coordY2 - 35) / 2) && checkArea(field, coordX3 - 8, (coordY3 - 35) / 2)) {
+				field->field[coordX - 8][(coordY - 35) / 2] = '#';
+				field->field[coordX2 - 8][(coordY2 - 35) / 2] = '#';
+				field->field[coordX3 - 8][(coordY3 - 35) / 2] = '#';
 
 				field->ship3[shipNum].size = 3;
 				field->ship3[shipNum].decCoord = new int* [3];
 				field->ship3[shipNum].decCoord[0] = new int[2];
 				field->ship3[shipNum].decCoord[1] = new int[2];
 				field->ship3[shipNum].decCoord[2] = new int[2];
-				field->ship3[shipNum].decCoord[0][0] = coordX;
-				field->ship3[shipNum].decCoord[0][1] = coordY;
-				field->ship3[shipNum].decCoord[1][0] = coordX2;
-				field->ship3[shipNum].decCoord[1][1] = coordX2;
-				field->ship3[shipNum].decCoord[2][0] = coordX3;
-				field->ship3[shipNum].decCoord[2][1] = coordY3;
+				field->ship3[shipNum].decCoord[0][0] = coordX - 8;
+				field->ship3[shipNum].decCoord[0][1] = (coordY - 35) / 2;
+				field->ship3[shipNum].decCoord[1][0] = coordX2 - 8;
+				field->ship3[shipNum].decCoord[1][1] = (coordY2 - 35) / 2;
+				field->ship3[shipNum].decCoord[2][0] = coordX3 - 8;
+				field->ship3[shipNum].decCoord[2][1] = (coordY3 - 35) / 2;
 				field->ship3[shipNum].decStat = new bool[3];
 				field->ship3[shipNum].decStat[0] = true;
 				field->ship3[shipNum].decStat[1] = true;
@@ -620,15 +616,10 @@ void fillFieldManual(playerField* field)
 				field->ship3[shipNum].genStat = 1;
 				shipNum++;
 				showField(field);
-				setCursorPos(8, 35);
-				std::cout << "* * *";
-				coordX = 8;
-				coordY = 35;
 			}
 			else {
 				showField(field);
 				PlaySound(TEXT("musica\\error.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				std::cout << "* * *";
 			}
 		}
 		else if (entering == ROTATION) {
@@ -667,10 +658,12 @@ void fillFieldManual(playerField* field)
 
 	//двухпалубные
 	shipNum = 0;
-	coordX = 0;
-	coordY = 0;
-	std::cout << "Place the ship" << field->playerName << std::endl;
+	coordX = 8;
+	coordY = 35;
+
+	setCursorPos(8, 35);
 	std::cout << "* *";
+
 	while (shipNum < 3) {
 
 		entering = _getch();
@@ -679,22 +672,22 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			if (coordX > 0) {
+			if (coordX > 8) {
 				coordX -= 1;
 			}
 
 			showField(field);
 			if (rota) {
 
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
 			}
 			else {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
 			}
 			setCursorPos(20, 20);
@@ -708,21 +701,21 @@ void fillFieldManual(playerField* field)
 			showField(field);
 
 			if (rota) {
-				if (coordX < 9) {
+				if (coordX < 17) {
 					coordX += 1;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
 			}
 			else {
-				if (coordX < 8) {
+				if (coordX < 16) {
 					coordX += 1;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
 			}
 
@@ -737,21 +730,21 @@ void fillFieldManual(playerField* field)
 
 			showField(field);
 			if (rota) {
-				if (coordY < 8) {
-					coordY += 1;
+				if (coordY < 50) {
+					coordY += 2;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
 			}
 			else {
-				if (coordY < 9) {
-					coordY += 1;
+				if (coordY < 53) {
+					coordY += 2;
 				}
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
 			}
 			setCursorPos(20, 20);
@@ -761,22 +754,22 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			if (coordY > 0) {
-				coordY -= 1;
+			if (coordY > 35) {
+				coordY -= 2;
 			}
 
 			showField(field);
 
 			if (rota) {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
 			}
 			else {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
 			}
 			setCursorPos(20, 20);
@@ -788,25 +781,26 @@ void fillFieldManual(playerField* field)
 
 			if (rota) {
 				coordX2 = coordX;
-				coordY2 = coordY + 1;
+				coordY2 = coordY + 2;
 			}
 			else {
 				coordX2 = coordX + 1;
 				coordY2 = coordY;
 			}
 
-			if (checkArea(field, coordX, coordY) && checkArea(field, coordX2, coordY2)) {
-				field->field[coordX2][coordY2] = '#';
-				field->field[coordX][coordY] = '#';
+			if (checkArea(field, coordX - 8, (coordY - 35) / 2) && checkArea(field, coordX2 - 8, (coordY2 - 35) / 2)) {
+				field->field[coordX - 8][(coordY - 35) / 2] = '#';
+				field->field[coordX2 - 8][(coordY2 - 35) / 2] = '#';
+				
 
 				field->ship2[shipNum].size = 2;
 				field->ship2[shipNum].decCoord = new int* [2];
 				field->ship2[shipNum].decCoord[0] = new int[2];
 				field->ship2[shipNum].decCoord[1] = new int[2];
-				field->ship2[shipNum].decCoord[0][0] = coordX;
-				field->ship2[shipNum].decCoord[0][1] = coordX;
-				field->ship2[shipNum].decCoord[1][0] = coordX2;
-				field->ship2[shipNum].decCoord[1][1] = coordY2;
+				field->ship2[shipNum].decCoord[0][0] = coordX - 8;
+				field->ship2[shipNum].decCoord[0][1] = (coordY - 35) / 2;
+				field->ship2[shipNum].decCoord[1][0] = coordX2 - 8;
+				field->ship2[shipNum].decCoord[1][1] = (coordY2 - 35) / 2;
 				field->ship2[shipNum].decStat = new bool[2];
 				field->ship2[shipNum].decStat[0] = true;
 				field->ship2[shipNum].decStat[1] = true;
@@ -821,7 +815,7 @@ void fillFieldManual(playerField* field)
 		}
 		else if (entering == ROTATION) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
-			if (coordX + 1 > 9 || coordY * 2 + 2 > 18) {
+			if (coordX + 1 > 17 || coordY + 2 > 53) {
 				continue;
 			}
 
@@ -832,15 +826,15 @@ void fillFieldManual(playerField* field)
 			rota = !rota;
 
 			if (rota) {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX, coordY * 2 + 2);
+				setCursorPos(coordX, coordY + 2);
 				std::cout << "*";
 			}
 			else {
-				setCursorPos(coordX, coordY * 2);
+				setCursorPos(coordX, coordY);
 				std::cout << "*";
-				setCursorPos(coordX + 1, coordY * 2);
+				setCursorPos(coordX + 1, coordY);
 				std::cout << "*";
 			}
 
@@ -851,11 +845,8 @@ void fillFieldManual(playerField* field)
 
 	//однопалубные
 	shipNum = 0;
-	coordX = 0;
-	coordY = 0;
-
-	std::cout << "Place the ship" << field->playerName << std::endl;
-	std::cout << "*";
+	coordX = 8;
+	coordY = 35;
 
 	while (shipNum < 4) {
 
@@ -864,11 +855,11 @@ void fillFieldManual(playerField* field)
 		if (entering == UP) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
-			if (coordX > 0) {
+			if (coordX > 8) {
 				coordX -= 1;
 			}
 			showField(field);
-			setCursorPos(coordX, coordY * 2);
+			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 20);
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
@@ -876,11 +867,11 @@ void fillFieldManual(playerField* field)
 		else if (entering == DOWN) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
-			if (coordX < 9) {
+			if (coordX < 17) {
 				coordX += 1;
 			}
 			showField(field);
-			setCursorPos(coordX, coordY * 2);
+			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 20);
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
@@ -888,11 +879,11 @@ void fillFieldManual(playerField* field)
 		else if (entering == RIGHT) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
-			if (coordY < 9) {
-				coordY += 1;
+			if (coordY < 53) {
+				coordY += 2;
 			}
 			showField(field);
-			setCursorPos(coordX, coordY * 2);
+			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 20);
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
@@ -900,11 +891,11 @@ void fillFieldManual(playerField* field)
 		else if (entering == LEFT) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
-			if (coordY > 0) {
-				coordY -= 1;
+			if (coordY > 35) {
+				coordY -= 2;
 			}
 			showField(field);
-			setCursorPos(coordX, coordY * 2);
+			setCursorPos(coordX, coordY);
 			std::cout << '*';
 			setCursorPos(20, 20);
 			std::cout << "coordX = " << coordX << " coordY = " << coordY << std::endl;
@@ -913,14 +904,14 @@ void fillFieldManual(playerField* field)
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			system("CLS");
 
-			if (checkArea(field, coordX, coordY)) {
-				field->field[coordX][coordY] = '#';
+			if (checkArea(field, coordX - 8, (coordY - 35) / 2)) {
+				field->field[coordX - 8][(coordY - 35) / 2] = '#';
 
 				field->ship1[shipNum].size = 1;
 				field->ship1[shipNum].decCoord = new int* [1];
 				field->ship1[shipNum].decCoord[0] = new int[2];
-				field->ship1[shipNum].decCoord[0][0] = coordX;
-				field->ship1[shipNum].decCoord[0][1] = coordY;
+				field->ship1[shipNum].decCoord[0][0] = coordX - 8;
+				field->ship1[shipNum].decCoord[0][1] = (coordY - 35) / 2;
 				field->ship1[shipNum].decStat = new bool[1];
 				field->ship1[shipNum].decStat[0] = true;
 				field->ship1[shipNum].genStat = 1;
@@ -933,7 +924,6 @@ void fillFieldManual(playerField* field)
 			}
 		}
 	}
-
 }
 
 //+заполнение полей автоматически

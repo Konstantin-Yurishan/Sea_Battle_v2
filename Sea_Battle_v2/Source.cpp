@@ -85,13 +85,11 @@ void fillFieldManual(playerField*);
 void showField(playerField*);
 void setCursorPos(int, int);
 void showFields(playerField*, playerField*);
-//void makeShoot(playerField*, playerField*);
-//bool shootChecker(playerField*, int, int);
 //void game(); //входят функции intro, mainMenu все функции для игры
 void mainMenu(playerField*, playerField*);
 void consoleSize(); //задаёт размер окна
-bool terminator_1(playerField*);
-bool terminator_2(playerField*);
+bool terminator_1(playerField*, std::string);
+bool terminator_2(playerField*, std::string);
 void startGame(playerField*, playerField*, int);
 bool shooter(playerField*, playerField*); //представляем навигацию по вражескому полю
 bool winChecker(playerField*, playerField*);
@@ -1209,7 +1207,7 @@ void showFields(playerField* field1, playerField* field2)
 	char miss = 176;
 	char mist = 178;
 
-	std::cout << "\n\n\n";
+	std::cout << "\n\t\t\t\t\t    " << "Turn for " << field1->playerName << std::endl << std::endl;
 	std::cout << "\t\t\t\t" << field1->playerName << "\t\t\t\t" << field2->playerName << std::endl;
 	std::cout << "\t\t\t   A B C D E F G H I J \t\t   A B C D E F G H I J " << std::endl;
 
@@ -1266,13 +1264,13 @@ void showFields(playerField* field1, playerField* field2)
 	std::cout << std::endl;
 	std::cout << "\t\t\t   Remaining ships: \t\t   Remaining ships: " << std::endl;
 	std::cout << "\t\t\t    Single-deck - " << field1->ship1[0].genStat + field1->ship1[1].genStat + field1->ship1[2].genStat + field1->ship1[3].genStat;
-	std::cout << "\t\t Single-deck - " << field2->ship1[0].genStat + field2->ship1[1].genStat + field2->ship1[2].genStat + field2->ship1[3].genStat << std::endl;
+	std::cout << "\t\t    Single-deck - " << field2->ship1[0].genStat + field2->ship1[1].genStat + field2->ship1[2].genStat + field2->ship1[3].genStat << std::endl;
 	std::cout << "\t\t\t    Double-deck - " << field1->ship2[0].genStat + field1->ship2[1].genStat + field1->ship2[2].genStat;
-	std::cout << "\t\t Double-deck - " << field2->ship2[0].genStat + field2->ship2[1].genStat + field2->ship2[2].genStat << std::endl;
+	std::cout << "\t\t    Double-deck - " << field2->ship2[0].genStat + field2->ship2[1].genStat + field2->ship2[2].genStat << std::endl;
 	std::cout << "\t\t\t    Three-deck - " << field1->ship3[0].genStat + field1->ship3[1].genStat;
-	std::cout << "\t\t\t Three-deck - " << field2->ship3[0].genStat + field2->ship3[1].genStat << std::endl;
+	std::cout << "\t\t    Three-deck - " << field2->ship3[0].genStat + field2->ship3[1].genStat << std::endl;
 	std::cout << "\t\t\t    Four-deck - " << field1->ship4[0].genStat;
-	std::cout << "\t\t\t Four-deck - " << field2->ship4[0].genStat << std::endl;
+	std::cout << "\t\t    Four-deck - " << field2->ship4[0].genStat << std::endl;
 
 }
 
@@ -1283,133 +1281,6 @@ void setCursorPos(int y, int x)
 	COORD pos = { x, y };
 	SetConsoleCursorPosition(output, pos);
 }
-
-//пока не решил что делать с этим
-/* 
-void makeShoot(playerField* field1, playerField* field2)
-{
-	int modX = 1, modY = 35;
-	int coordX = modX, coordY = modY;
-
-	char entering;
-	enum { UP = 72, DOWN = 80, RIGHT = 77, LEFT = 75, ENTER = '\r', ROTATION = 'r' };
-
-	//перемещаем курсор по полю в поискахъ позиции для выстрела
-	//после выбора позиции, нажимаем на выстрел
-	//если там есть корабль, то начинаем разбираться
-		//если полностью потоплен, то окружаем место корабля на одну клетку помоченным
-		// если не потоплен, то ппомечаем чать корабля подбитой
-		// записываем информацию на поле
-		// записываем информацию в сам корабль
-	//если корабля нет
-		//сообщение о промахе
-		//помечаем место как разведаное
-
-
-
-	showFields(field1, field2);
-	setCursorPos(coordX, coordY);
-	std::cout << '*';
-	while (true) {
-
-		entering = _getch();
-
-		if (entering == UP) {
-			system("CLS");
-			if (coordX > modX) {
-				coordX -= 1;
-			}
-			showFields(field1, field2);
-			setCursorPos(coordX, coordY);
-			std::cout << '*';
-			setCursorPos(20, 0);
-			std::cout << coordX - modX << "  " << coordY - modY - ((coordY - modY) / 2) << std::endl;
-		}
-		else if (entering == DOWN) {
-			system("CLS");
-			if (coordX < modX + 9) {
-				coordX += 1;
-			}
-			showFields(field1, field2);
-			setCursorPos(coordX, coordY);
-			std::cout << '*';
-			setCursorPos(20, 0);
-			std::cout << coordX - modX << "  " << coordY - modY - ((coordY - modY) / 2) << std::endl;
-		}
-		else if (entering == RIGHT) {
-			system("CLS");
-			if (coordY < modY + 18) {
-				coordY += 2;
-			}
-			showFields(field1, field2);
-			setCursorPos(coordX, coordY);
-			std::cout << '*';
-			setCursorPos(20, 0);
-			std::cout << coordX - modX << "  " << coordY - modY - ((coordY - modY) / 2) << std::endl;
-		}
-		else if (entering == LEFT) {
-			system("CLS");
-			if (coordY > modY) {
-				coordY -= 2;
-			}
-			showFields(field1, field2);
-			setCursorPos(coordX, coordY);
-			std::cout << '*';
-			setCursorPos(20, 0);
-			std::cout << coordX - modX << "  " << coordY - modY - ((coordY - modY) / 2) << std::endl;
-		}
-		else if (entering == ENTER) {
-			shootChecker(field2, coordX - modX, coordY - modY - ((coordY - modY) / 2));
-		}
-	}
-}
-
-//возвращать будет true при результативном попадании
-bool shootChecker(playerField* field, int x, int y)
-{
-
-	std::cout << field->ship1[0].decCoord[0][0] << " " << field->ship1[0].decCoord[0][1] << std::endl;
-	std::cout << field->ship1[1].decCoord[0][0] << " " << field->ship1[1].decCoord[0][1] << std::endl;
-	std::cout << field->ship1[2].decCoord[0][0] << " " << field->ship1[2].decCoord[0][1] << std::endl;
-	std::cout << field->ship1[3].decCoord[0][0] << " " << field->ship1[3].decCoord[0][1] << std::endl;
-
-	if (field->field[x][y] == '#') {
-
-		//поиск грёбаного корабля
-		for (int i = 0; i < 4; i++) {
-
-			if (field->ship1[i].decCoord[0][0] == x && field->ship1[i].decCoord[0][1] == y) {
-				(*field->ship1[i].decStat) = false;
-				field->ship1[i].genStat = 0;
-				field->field[x][y] = 'X';
-
-				if (field->ship1[i].genStat == 0) {
-					//работает функция для границ
-				}
-
-				return true;
-			}
-		}
-
-	}
-	else if (field->field[x][y] == '~') {
-		//звук всплеска, например
-		field->field[x][y] = '0';
-		std::cout << "Miss!" << std::endl;
-		return false;
-	}
-	else if (field->field[x][y] == 'X' || field->field[x][y] == '0') {
-		std::cout << "Miss! You're blind bastard!" << std::endl;
-		return false;
-	}
-	else {
-		return false;
-	}
-
-
-
-}
-*/
 
 //-главное меню игры
 void mainMenu(playerField* field_1, playerField* field_2)
@@ -1438,7 +1309,7 @@ void mainMenu(playerField* field_1, playerField* field_2)
 				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Player vs player." << std::endl;
 				std::cout << "\t\t\t\t\t2. Player vs PC (easy)." << std::endl;
 				std::cout << "\t\t\t\t\t3. Player vs PC (hard)." << std::endl;
-				std::cout << "\t\t\t\t\t3. PC vs PC." << std::endl;
+				std::cout << "\t\t\t\t\t4. PC vs PC." << std::endl;
 				std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 				
 				choose = _getch();
@@ -1505,7 +1376,7 @@ void mainMenu(playerField* field_1, playerField* field_2)
 					case '2':	//игрок против PC (лёгкий)
 						system("CLS");
 						PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-
+						field_2->playerName = "PC";
 						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
 						std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
 						std::cout << "\t\t\t\t\t0. Exit." << std::endl;
@@ -1542,7 +1413,7 @@ void mainMenu(playerField* field_1, playerField* field_2)
 					case '3':	//игрок против PC (сложный)
 						system("CLS");
 						PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-
+						field_2->playerName = "PC";
 						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
 						std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
 						std::cout << "\t\t\t\t\t0. Exit." << std::endl;
@@ -1592,14 +1463,20 @@ void mainMenu(playerField* field_1, playerField* field_2)
 
 						switch (choose) {
 						case '1':
+							field_1->playerName = "PC hard";
+							field_2->playerName = "PC easy";
 							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 							startGame(field_1, field_2, 3);
 							break;
 						case '2':
+							field_1->playerName = "PC easy 1";
+							field_2->playerName = "PC easy 2";
 							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 							startGame(field_1, field_2, 4);
 							break;
 						case '3':
+							field_1->playerName = "PC hard 1";
+							field_2->playerName = "PC hard 2";
 							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 							startGame(field_1, field_2, 5);
 							break;
@@ -1653,7 +1530,7 @@ void consoleSize()
 }
 
 //-рандомно ищёт корабли на поле, возвращает true в случае удачного выстрела, выводит информацию о попадании или промахе
-bool terminator_1(playerField* field){
+bool terminator_1(playerField* field, std::string name){
 
 	char cont;
 	while (true) {
@@ -1664,9 +1541,9 @@ bool terminator_1(playerField* field){
 			field->field[x][y] = '0';
 			system("CLS");
 			while (true) {
-				setCursorPos(8, 35);
-				std::cout << "PC  is miss!" << std::endl;
-				std::cout << "\t\t\t\tPress enter";
+				setCursorPos(8, 45);
+				std::cout << name << " is miss!" << std::endl;
+				std::cout << "\n\t\t\t\t\t     press enter";
 				cont = _getch();
 				if (cont == '\r') {
 					return false;
@@ -1677,9 +1554,9 @@ bool terminator_1(playerField* field){
 			accountant(field, x, y);
 			system("CLS");
 			while (true) {
-				setCursorPos(8, 35);
-				std::cout << "PC hit you!" << std::endl;
-				std::cout << "\t\t\t\tPress enter";
+				setCursorPos(8, 45);
+				std::cout << name << " hit!" << std::endl;
+				std::cout << "\n\t\t\t\t\t     press enter";
 				cont = _getch();
 				if (cont == '\r') {
 					return true;
@@ -1690,11 +1567,41 @@ bool terminator_1(playerField* field){
 }
 
 //-"умный" бот, , возвращает true в случае удачного выстрела
-bool terminator_2(playerField* field) { 
+bool terminator_2(playerField* field, std::string name) {
 	
+	char cont;
+	while (true) {
+		int x = rand() % 10;
+		int y = rand() % 10;
 
-	
-	
+		if (field->field[x][y] == '~') {
+			field->field[x][y] = '0';
+			system("CLS");
+			while (true) {
+				setCursorPos(8, 45);
+				std::cout << name << " is miss!" << std::endl;
+				std::cout << "\n\t\t\t\t\t     press enter";
+				cont = _getch();
+				if (cont == '\r') {
+					return false;
+				}
+			}
+		}
+		else if (field->field[x][y] == '#') {
+			field->field[x][y] = 'X';
+			accountant(field, x, y);
+			system("CLS");
+			while (true) {
+				setCursorPos(8, 45);
+				std::cout << name << " hit!" << std::endl;
+				std::cout << "\n\t\t\t\t\t     press enter";
+				cont = _getch();
+				if (cont == '\r') {
+					return true;
+				}
+			}
+		}
+	}
 	
 	return true; 
 }
@@ -1703,12 +1610,15 @@ bool terminator_2(playerField* field) {
 void startGame(playerField* field1, playerField* field2, int mode)
 {
 
-	//modes - 0 - игрок против игрока, 1 - игрок против PC, 2 - PC против PC
 	system("CLS");
+
+	char cont;
+
 	if (mode == 0) {
 		while (winChecker(field1, field2)) {
 			while (shooter(field1, field2)) {
 			}
+			if (!winChecker(field1, field2)) break;
 			while (shooter(field2, field1)) {
 			}
 		}
@@ -1717,12 +1627,106 @@ void startGame(playerField* field1, playerField* field2, int mode)
 		while (winChecker(field1, field2)) {
 			while (shooter(field1, field2)) {
 			}
-			while (terminator_1(field1)) {
+			if (!winChecker(field1, field2)) break;
+			while (terminator_1(field1, field2->playerName)) {
 			}
 		}
 	}
 	else if (mode == 2) {
-
+		while (winChecker(field1, field2)) {
+			while (shooter(field1, field2)) {
+			}
+			if (!winChecker(field1, field2)) break;
+			while (terminator_2(field1, field2->playerName)) {
+			}
+		}
+	}
+	else if (mode == 3) {
+		while (winChecker(field1, field2)) {
+			while (terminator_2(field2, field1->playerName)) {
+				system("CLS");
+				showFields(field1, field2);
+				while (true) {
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						break;
+					}
+				}
+				system("CLS");
+			}
+			if (!winChecker(field1, field2)) break;
+			while (terminator_1(field1, field2->playerName)) {
+				system("CLS");
+				showFields(field2, field1);
+				while (true) {
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						break;
+					}
+				}
+				system("CLS");
+			}
+		}
+	}
+	else if (mode == 4) {
+		while (winChecker(field1, field2)) {
+			while (terminator_1(field2, field1->playerName)) {
+				system("CLS");
+				showFields(field1, field2);
+				while (true) {
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						break;
+					}
+				}
+				system("CLS");
+			}
+			if (!winChecker(field1, field2)) break;
+			while (terminator_1(field1, field2->playerName)) {
+				system("CLS");
+				showFields(field2, field1);
+				while (true) {
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						break;
+					}
+				}
+				system("CLS");
+			}
+		}
+	}
+	else if (mode == 5) {
+		while (winChecker(field1, field2)) {
+			while (terminator_2(field2, field1->playerName)) {
+				system("CLS");
+				showFields(field1, field2);
+				while (true) {
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						break;
+					}
+				}
+				system("CLS");
+			}
+			if (!winChecker(field1, field2)) break;
+			while (terminator_2(field1, field2->playerName)) {
+				system("CLS");
+				showFields(field2, field1);
+				while (true) {
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						break;
+					}
+				}
+				system("CLS");
+			}
+		}
 	}
 	else {
 		std::cout << "Error in block \"startGame\"";
@@ -1746,9 +1750,8 @@ bool shooter(playerField* field1, playerField* field2)
 		showFields(field1, field2);
 
 		setCursorPos(coordX, coordY);
-
+		char cont;
 		std::cout << '+';
-
 
 		entering = _getch();
 
@@ -1774,14 +1777,41 @@ bool shooter(playerField* field1, playerField* field2)
 				field2->field[coordX - 5][(coordY - 59) / 2] = 'X';
 				accountant(field2, coordX - 5, (coordY - 59) / 2);
 				system("CLS");
-				std::cout << "Nice shoot!" << std::endl;
-				Sleep(2000);
+				while (true) {
+					setCursorPos(8, 45);
+					std::cout << "Nice shoot!" << std::endl;
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						return true;
+					}
+				}
 			} else if(field2->field[coordX - 5][(coordY - 59) / 2] == '~') {
 				field2->field[coordX - 5][(coordY - 59) / 2] = '0';
 				system("CLS");
-				std::cout << "You miss!" << std::endl;
-				Sleep(2000);
-				return false;
+				while (true) {
+					setCursorPos(8, 45);
+					std::cout << "You miss!" << std::endl;
+					std::cout << "\n\t\t\t\t\t    press enter";
+					cont = _getch();
+					if (cont == '\r') break;
+				}
+
+				if (field2->playerName != "PC") {
+					system("CLS");
+					while (true) {
+						setCursorPos(8, 35);
+						std::cout << "Make way for the second player!" << std::endl;
+						std::cout << "\n\t\t\t\t\t     press enter";
+						cont = _getch();
+						if (cont == '\r') {
+							return false;
+						}
+					}
+				}
+				else {
+					return false;
+				}
 			}
 			else {
 				PlaySound(TEXT("musica\\error.wav"), NULL, SND_FILENAME | SND_ASYNC);

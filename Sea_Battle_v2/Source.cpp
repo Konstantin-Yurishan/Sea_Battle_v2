@@ -116,7 +116,7 @@ int main()
 	playerField field_2 = createPlayerField();
 	playerField* field_2_ptr = &field_2;
 
-	//intro();
+	intro();
 	while (_kbhit()) _getch();  //для игнорирования "случайного" воода во время заставки, чтобы он не отразился на вводе в меню
 	mainMenu(field_1_ptr, field_2_ptr);
 

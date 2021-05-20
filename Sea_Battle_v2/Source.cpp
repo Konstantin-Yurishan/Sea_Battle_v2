@@ -1,9 +1,9 @@
 ﻿/*
-
 ------ошибка с выходом в меню!!!!!! исправить или переделать полностью
 1.Глобальная переменная для досрочного завершения игры во время игры. Информация о клавише выводится в showFields. После этого игра возвращается в главное меню
 	можно реализовать в отдельной функции "game", куда будут помещены все нужные функции
 2.Звуки при попаданиях и прочее
+---сброс полей
 3.Показ поздравления при завершении игры
 4.Сложный ИИ
 5.Разнесение программы по разным файлам
@@ -1566,6 +1566,7 @@ bool terminator_1(playerField* field, std::string name)
 		}
 		else if (field->field[x][y] == '#') {
 			field->field[x][y] = 'X';
+			field->amount--;
 			accountant(field, x, y);
 			system("CLS");
 			while (true) {
@@ -1585,41 +1586,68 @@ bool terminator_1(playerField* field, std::string name)
 bool terminator_2(playerField* field, std::string name)
 {
 
-	char cont;
-	while (true) {
-		int x = rand() % 10;
-		int y = rand() % 10;
 
-		if (field->field[x][y] == '~') {
-			field->field[x][y] = '0';
-			system("CLS");
-			while (true) {
-				setCursorPos(8, 45);
-				std::cout << name << " is miss!" << std::endl;
-				std::cout << "\n\t\t\t\t\t     press enter";
-				cont = _getch();
-				if (cont == '\r') {
-					return false;
+	char cont;
+
+	int beer = rand() % 4;
+	int x, y;
+
+	if (beer == 1) {
+		while (true) {
+
+			x = rand() % 10;
+			y = rand() % 10;
+
+		if (field->field[x][y] == '#') {
+				field->field[x][y] = 'X';
+				field->amount--;
+				accountant(field, x, y);
+				system("CLS");
+				while (true) {
+					setCursorPos(8, 45);
+					std::cout << name << " hit!" << std::endl;
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						return true;
+					}
 				}
 			}
 		}
-		else if (field->field[x][y] == '#') {
-			field->field[x][y] = 'X';
-			accountant(field, x, y);
-			system("CLS");
-			while (true) {
-				setCursorPos(8, 45);
-				std::cout << name << " hit!" << std::endl;
-				std::cout << "\n\t\t\t\t\t     press enter";
-				cont = _getch();
-				if (cont == '\r') {
-					return true;
+	} else {
+		while (true) {
+			x = rand() % 10;
+			y = rand() % 10;
+			if (field->field[x][y] == '~') {
+				field->field[x][y] = '0';
+				system("CLS");
+				while (true) {
+					setCursorPos(8, 45);
+					std::cout << name << " is miss!" << std::endl;
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						return false;
+					}
+				}
+			}
+			else if (field->field[x][y] == '#') {
+				field->field[x][y] = 'X';
+				field->amount--;
+				accountant(field, x, y);
+				system("CLS");
+				while (true) {
+					setCursorPos(8, 45);
+					std::cout << name << " hit!" << std::endl;
+					std::cout << "\n\t\t\t\t\t     press enter";
+					cont = _getch();
+					if (cont == '\r') {
+						return true;
+					}
 				}
 			}
 		}
 	}
-
-	return true;
 }
 
 //-начинает игру с переданными параметрами

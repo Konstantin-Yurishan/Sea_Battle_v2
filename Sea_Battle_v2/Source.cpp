@@ -1928,7 +1928,7 @@ bool shooter(playerField* field1, playerField* field2)
 	}
 }
 
-//-производит проверку выйгрыша в игре (окончания)
+//+производит проверку выйгрыша в игре (окончания)
 bool winChecker(playerField* field1, playerField* field2)
 {
 	char cont;
@@ -2042,7 +2042,7 @@ void arealMarker(playerField* field, ship ship)
 	}
 }
 
-//-начальная заставка
+//+начальная заставка
 void intro()
 {
 

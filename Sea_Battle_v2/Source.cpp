@@ -1,17 +1,4 @@
-﻿/*
-------ошибка с выходом в меню!!!!!! исправить или переделать полностью
-1.Глобальная переменная для досрочного завершения игры во время игры. Информация о клавише выводится в showFields. После этого игра возвращается в главное меню
-	можно реализовать в отдельной функции "game", куда будут помещены все нужные функции
-2.Звуки при попаданиях и прочее
----сброс полей
-3.Показ поздравления при завершении игры
-4.Сложный ИИ
-5.Разнесение программы по разным файлам
-6.Выровнять интерфейс
-7.Кнопка "назад" для меню
-8.Перемещение по меню с помощью стрелок клавиатуры. Подсветка выбранного пункта меню? Вввод с помощью enter. Звук при перемещении по пунктам меню.
-9.Вычещение и оптимизация кода, комментирование.
-*/
+﻿/*  Sea Battle v2 */
 
 #include <iostream>
 #include <string>
@@ -45,22 +32,22 @@ HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 void intro();
 playerField createPlayerField(); //создаёт экземпляр структуры, и заполняет в ней поле field
 bool checkArea(playerField*, int, int); //проверяет окресности переданной точки на переданном поле
-void fillFieldAutomatic(playerField*);
-void fillFieldManual(playerField*);
-void showField(playerField*);
-void setCursorPos(int, int);
-void showFields(playerField*, playerField*);
-//void game(); //входят функции intro, mainMenu все функции для игры
-void mainMenu(playerField*, playerField*);
+void fillFieldAutomatic(playerField*);  //автоматически заполняет поля
+void fillFieldManual(playerField*);  //заполнение полей вручную
+void showField(playerField*);  //покказ поля при заполнении вручную
+void setCursorPos(int, int);  //установка курсора в позицию по координатам
+void showFields(playerField*, playerField*);  //показ обоих полей
+void mainMenu(playerField*, playerField*);  //главное меню игры
 void consoleSize(); //задаёт размер окна
-bool terminator_1(playerField*, std::string);
-bool terminator_2(playerField*, std::string);
-void startGame(playerField*, playerField*, int);
+bool terminator_1(playerField*, std::string);  //простой ИИ
+bool terminator_2(playerField*, std::string);  //усложнённый ИИ на базе простого
+void startGame(playerField*, playerField*, int);  //игровая "логика" чередования ходов
 bool shooter(playerField*, playerField*); //представляем навигацию по вражескому полю
-bool winChecker(playerField*, playerField*);
+bool winChecker(playerField*, playerField*);  //проверка кто выйграл
 void accountant(playerField*, int, int); // запись информации по выстрелу
-void arealMarker(playerField*, ship);
+void arealMarker(playerField*, ship);  //заполняет поле вокруг подбитого корабля
 
+bool play_exit = true;
 
 int main()
 {
@@ -68,7 +55,7 @@ int main()
 	srand(time(NULL));
 	consoleSize();
 
-	//скрывает мигающий курсор - ????????????
+	//скрывает мигающий курсор
 	void* handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_CURSOR_INFO structCursorInfo;
 	GetConsoleCursorInfo(handle, &structCursorInfo);
@@ -80,7 +67,7 @@ int main()
 	playerField field_2 = createPlayerField();
 	playerField* field_2_ptr = &field_2;
 
-	//intro();
+	intro();
 	while (_kbhit()) _getch();  //для игнорирования "случайного" воода во время заставки, чтобы он не отразился на вводе в меню
 	mainMenu(field_1_ptr, field_2_ptr);
 
@@ -103,6 +90,8 @@ playerField createPlayerField()
 			newField.field[i][c] = '~';
 		}
 	}
+
+	newField.amount = 20;
 
 	return newField;
 }
@@ -1176,7 +1165,7 @@ void fillFieldAutomatic(playerField* field)
 	}
 }
 
-//-вывод поля для заполнения кораблями вручную
+//+вывод поля для заполнения кораблями вручную
 void showField(playerField* field)
 {
 	char sea = 176;
@@ -1209,7 +1198,7 @@ void showField(playerField* field)
 	std::cout << "\n\t\t\tr - for rotation, arrow keys for navigation" << std::endl;
 }
 
-//-показывает оба игровых поля
+//+показывает оба игровых поля с статистикой по кораблям
 void showFields(playerField* field1, playerField* field2)
 {
 
@@ -1220,7 +1209,7 @@ void showFields(playerField* field1, playerField* field2)
 	char mist = 178;
 
 	std::cout << "\n\t\t\t\t\t    " << "Turn for " << field1->playerName << std::endl << std::endl;
-	std::cout << "\t\t\t\t" << field1->playerName << "\t\t\t\t" << field2->playerName << std::endl;
+	std::cout << "\t\t\t\t" << field1->playerName << "\t\t\t" << field2->playerName << std::endl;
 	std::cout << "\t\t\t   A B C D E F G H I J \t\t   A B C D E F G H I J " << std::endl;
 
 	for (int i = 0; i < 10; i++) {
@@ -1283,6 +1272,7 @@ void showFields(playerField* field1, playerField* field2)
 	std::cout << "\t\t    Three-deck - " << field2->ship3[0].genStat + field2->ship3[1].genStat << std::endl;
 	std::cout << "\t\t\t    Four-deck - " << field1->ship4[0].genStat;
 	std::cout << "\t\t    Four-deck - " << field2->ship4[0].genStat << std::endl;
+	std::cout << "\t\t\t\t\tpress b to exit to main menu" << std::endl;
 
 }
 
@@ -1294,227 +1284,192 @@ void setCursorPos(int y, int x)
 	SetConsoleCursorPosition(output, pos);
 }
 
-//-главное меню игры
+//+главное меню игры
 void mainMenu(playerField* field_1, playerField* field_2)
 {
-	field_1->playerName = "Player1";
-	field_2->playerName = "Player2";
-
 
 	char choose;
 	bool exit = true;
 
-	while (exit) {
-		system("CLS");
 
+
+	while (exit) {
+
+		system("CLS");
 		std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. New game." << std::endl;
 		std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 
 		choose = _getch();
 
-		switch (choose) {
-		case '1':
-
+		if (choose == '1') {
 			PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-			system("CLS");
+			while (exit) {
 
-			std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Player vs player." << std::endl;
-			std::cout << "\t\t\t\t\t2. Player vs PC (easy)." << std::endl;
-			std::cout << "\t\t\t\t\t3. Player vs PC (hard)." << std::endl;
-			std::cout << "\t\t\t\t\t4. PC vs PC." << std::endl;
-			std::cout << "\t\t\t\t\t0. Exit." << std::endl;
+				*field_1 = createPlayerField();
+				*field_2 = createPlayerField();
+				field_1->playerName = "Player1";
+				field_2->playerName = "Player2";
+				play_exit = true;
 
-			choose = _getch();
-
-			switch (choose) {
-			case '1':	//игрок против игрока
-
-				PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 				system("CLS");
-
-				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually Player1." << std::endl;
-				std::cout << "\t\t\t\t\t2. Arrange ships automatically Player1." << std::endl;
+				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Player vs player." << std::endl;
+				std::cout << "\t\t\t\t\t2. Player vs PC (easy)." << std::endl;
+				std::cout << "\t\t\t\t\t3. Player vs PC (hard)." << std::endl;
+				std::cout << "\t\t\t\t\t4. PC vs PC." << std::endl;
 				std::cout << "\t\t\t\t\t0. Exit." << std::endl;
 
 				choose = _getch();
 
-				switch (choose) {
-				case '1':
+				if (choose == '1') {
 					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для ручного расставления кораблей для игрока 1
-					fillFieldManual(field_1);
-					break;
-				case '2':
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для автоматического расставления кораблей для игрока 1
-					fillFieldAutomatic(field_1);
-					break;
-				case '0':
-					exit = false;
-					break;
-				default:
-					break;
+					while (true) {
+						system("CLS");
+						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually Player1." << std::endl;
+						std::cout << "\t\t\t\t\t2. Arrange ships automatically Player1." << std::endl;
+
+						choose = _getch();
+
+						if (choose == '1') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldManual(field_1);
+							break;
+						}
+						else if (choose == '2') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldAutomatic(field_1);
+							break;
+						}
+					}
+
+					while (true) {
+						system("CLS");
+						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually Player2." << std::endl;
+						std::cout << "\t\t\t\t\t2. Arrange ships automatically Player2." << std::endl;
+
+						choose = _getch();
+
+						if (choose == '1') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldManual(field_2);
+							break;
+						}
+						else if (choose == '2') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldAutomatic(field_2);
+							break;
+						}
+					}
+
+					startGame(field_1, field_2, 0);
+
 				}
-
-				system("CLS");
-
-				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually Player2." << std::endl;
-				std::cout << "\t\t\t\t\t2. Arrange ships automatically Player2." << std::endl;
-				std::cout << "\t\t\t\t\t0. Exit." << std::endl;
-
-				choose = _getch();
-
-				switch (choose) {
-				case '1':
+				else if (choose == '2') {
 					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для ручного расставления кораблей для игрока 2
-					fillFieldManual(field_2);
-					break;
-				case '2':
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для автоматического расставления кораблей для игрока 2
+					while (true) {
+						system("CLS");
+						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
+						std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
+
+						choose = _getch();
+
+						if (choose == '1') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldManual(field_1);
+							break;
+						}
+						else if (choose == '2') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldAutomatic(field_1);
+							break;
+						}
+					}
+
+					field_2->playerName = "PC";
 					fillFieldAutomatic(field_2);
-					break;
-				case '0':
-					exit = false;
-					break;
-				default:
-					break;
-				}
-				//начало игры игрок против игрока
-				if (exit) startGame(field_1, field_2, 0);
 
-				break;
-			case '2':	//игрок против PC (лёгкий)
-				system("CLS");
-				PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				field_2->playerName = "PC";
-				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
-				std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
-				std::cout << "\t\t\t\t\t0. Exit." << std::endl;
-
-				choose = _getch();
-
-				switch (choose) {
-				case '1':
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для ручного расставления кораблей для игрока 1
-					fillFieldManual(field_1);
-					//функция для автоматического расставления кораблей для PC
-					fillFieldAutomatic(field_2);
-					//запуск игры с переданными полями
 					startGame(field_1, field_2, 1);
-					break;
-				case '2':
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для автоматического расставления кораблей для игрока 1
-					fillFieldAutomatic(field_1);
-					//функция для автоматического расставления кораблей для PC
-					fillFieldAutomatic(field_2);
-					//запуск игры с переданными полями
-					startGame(field_1, field_2, 1);
-					break;
-				case '0':
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					exit = false;
-					break;
-				default:
-					break;
+
 				}
-				break;
-			case '3':	//игрок против PC (сложный)
-				system("CLS");
-				PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				field_2->playerName = "PC";
-				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
-				std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
-				std::cout << "\t\t\t\t\t0. Exit." << std::endl;
-
-				choose = _getch();
-
-				switch (choose) {
-				case '1':
+				else if (choose == '3') {
 					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для ручного расставления кораблей для игрока 1
-					fillFieldManual(field_1);
-					//функция для автоматического расставления кораблей для PC
+					while (true) {
+						system("CLS");
+						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Arrange ships manually." << std::endl;
+						std::cout << "\t\t\t\t\t2. Arrange ships automatically." << std::endl;
+
+						choose = _getch();
+
+						if (choose == '1') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldManual(field_1);
+							break;
+						}
+						else if (choose == '2') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							fillFieldAutomatic(field_1);
+							break;
+						}
+					}
+
+					field_2->playerName = "PC";
 					fillFieldAutomatic(field_2);
-					//запуск игры с переданными полями
+
 					startGame(field_1, field_2, 2);
-					break;
-				case '2':
+				}
+				else if (choose == '4') {
 					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					//функция для автоматического расставления кораблей для игрока 1
 					fillFieldAutomatic(field_1);
-					//функция для автоматического расставления кораблей для PC
 					fillFieldAutomatic(field_2);
-					//запуск игры с переданными полями
+
+					while (true) {
+						system("CLS");
+						std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Hard PC vs Easy PC" << std::endl;
+						std::cout << "\t\t\t\t\t2. Easy PC vs Easy PC" << std::endl;
+						std::cout << "\t\t\t\t\t3. Hard PC vs Hard PC" << std::endl;
+
+						choose = _getch();
+
+						if (choose == '1') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							field_1->playerName = "Hard PC";
+							field_2->playerName = "Easy PC";
+							startGame(field_1, field_2, 3);
+							break;
+						}
+						else if (choose == '2') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							field_1->playerName = "Easy PC1";
+							field_2->playerName = "Easy PC2";
+							startGame(field_1, field_2, 4);
+							break;
+						}
+						else if (choose == '3') {
+							PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+							field_1->playerName = "Hard PC1";
+							field_2->playerName = "Hard PC2";
+							startGame(field_1, field_2, 5);
+							break;
+						}
+					}
+
 					startGame(field_1, field_2, 2);
-					break;
-				case '0':
+				}
+				else if (choose == '0') {
 					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					exit = false;
-					break;
-				default:
-					break;
 				}
-				break;
-			case '4':  //PC vs PC
-				system("CLS");
-				PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-
-				std::cout << "\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t1. Hard PC vs Easy PC" << std::endl;
-				std::cout << "\t\t\t\t\t2. Easy PC vs Easy PC" << std::endl;
-				std::cout << "\t\t\t\t\t3. Hard PC vs Hard PC" << std::endl;
-				std::cout << "\t\t\t\t\t0. Exit." << std::endl;
-
-				choose = _getch();
-
-				fillFieldAutomatic(field_1);
-				fillFieldAutomatic(field_2);
-
-				switch (choose) {
-				case '1':
-					field_1->playerName = "PC hard";
-					field_2->playerName = "PC easy";
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					startGame(field_1, field_2, 3);
-					break;
-				case '2':
-					field_1->playerName = "PC easy 1";
-					field_2->playerName = "PC easy 2";
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					startGame(field_1, field_2, 4);
-					break;
-				case '3':
-					field_1->playerName = "PC hard 1";
-					field_2->playerName = "PC hard 2";
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					startGame(field_1, field_2, 5);
-					break;
-				case '0':
-					PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					exit = false;
-					break;
-				default:
-					break;
-				}
-				break;
-			case '0':
-				exit = false;
-				break;
-			default:
-				break;
 			}
-
-			break;
-		case '0':
-			exit = false;
-			break;
-		default:
-			break;
 		}
+		else if (choose == '0') {
+			PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			exit = false;
+		}
+
+
 	}
+
 }
 
 //+задаёт размер окна консоли
@@ -1556,6 +1511,16 @@ bool terminator_1(playerField* field, std::string name)
 			system("CLS");
 			while (true) {
 				setCursorPos(8, 45);
+				int step = rand() % 4;
+				if (step == 0) {
+					PlaySound(TEXT("musica\\flesh5.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				}
+				else if (step == 1) {
+					PlaySound(TEXT("musica\\flesh6.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				}
+				else {
+					PlaySound(TEXT("musica\\flesh7.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				}
 				std::cout << name << " is miss!" << std::endl;
 				std::cout << "\n\t\t\t\t\t     press enter";
 				cont = _getch();
@@ -1571,6 +1536,7 @@ bool terminator_1(playerField* field, std::string name)
 			system("CLS");
 			while (true) {
 				setCursorPos(8, 45);
+				PlaySound(TEXT("musica\\explode3.wav"), NULL, SND_FILENAME | SND_ASYNC);
 				std::cout << name << " hit!" << std::endl;
 				std::cout << "\n\t\t\t\t\t     press enter";
 				cont = _getch();
@@ -1598,13 +1564,14 @@ bool terminator_2(playerField* field, std::string name)
 			x = rand() % 10;
 			y = rand() % 10;
 
-		if (field->field[x][y] == '#') {
+			if (field->field[x][y] == '#') {
 				field->field[x][y] = 'X';
 				field->amount--;
 				accountant(field, x, y);
 				system("CLS");
 				while (true) {
 					setCursorPos(8, 45);
+					PlaySound(TEXT("musica\\explode3.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					std::cout << name << " hit!" << std::endl;
 					std::cout << "\n\t\t\t\t\t     press enter";
 					cont = _getch();
@@ -1614,7 +1581,8 @@ bool terminator_2(playerField* field, std::string name)
 				}
 			}
 		}
-	} else {
+	}
+	else {
 		while (true) {
 			x = rand() % 10;
 			y = rand() % 10;
@@ -1623,6 +1591,16 @@ bool terminator_2(playerField* field, std::string name)
 				system("CLS");
 				while (true) {
 					setCursorPos(8, 45);
+					int step = rand() % 4;
+					if (step == 0) {
+						PlaySound(TEXT("musica\\flesh5.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					}
+					else if (step == 1) {
+						PlaySound(TEXT("musica\\flesh6.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					}
+					else {
+						PlaySound(TEXT("musica\\flesh7.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					}
 					std::cout << name << " is miss!" << std::endl;
 					std::cout << "\n\t\t\t\t\t     press enter";
 					cont = _getch();
@@ -1638,6 +1616,7 @@ bool terminator_2(playerField* field, std::string name)
 				system("CLS");
 				while (true) {
 					setCursorPos(8, 45);
+					PlaySound(TEXT("musica\\explode3.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					std::cout << name << " hit!" << std::endl;
 					std::cout << "\n\t\t\t\t\t     press enter";
 					cont = _getch();
@@ -1659,28 +1638,28 @@ void startGame(playerField* field1, playerField* field2, int mode)
 	char cont;
 
 	if (mode == 0) {
-		while (winChecker(field1, field2)) {
+		while (winChecker(field1, field2) && play_exit) {
 			while (shooter(field1, field2)) {
 			}
-			if (!winChecker(field1, field2)) break;
+			if (!winChecker(field1, field2) && play_exit) break;
 			while (shooter(field2, field1)) {
 			}
 		}
 	}
 	else if (mode == 1) {
-		while (winChecker(field1, field2)) {
+		while (winChecker(field1, field2) && play_exit) {
 			while (shooter(field1, field2)) {
 			}
-			if (!winChecker(field1, field2)) break;
+			if (!winChecker(field1, field2) && play_exit) break;
 			while (terminator_1(field1, field2->playerName)) {
 			}
 		}
 	}
 	else if (mode == 2) {
-		while (winChecker(field1, field2)) {
+		while (winChecker(field1, field2) && play_exit) {
 			while (shooter(field1, field2)) {
 			}
-			if (!winChecker(field1, field2)) break;
+			if (!winChecker(field1, field2) && play_exit) break;
 			while (terminator_2(field1, field2->playerName)) {
 			}
 		}
@@ -1783,7 +1762,7 @@ bool shooter(playerField* field1, playerField* field2)
 
 	int coordX, coordY;
 	char entering;
-	enum { UP = 72, DOWN = 80, RIGHT = 77, LEFT = 75, ENTER = '\r' };
+	enum { UP = 72, DOWN = 80, RIGHT = 77, LEFT = 75, ENTER = '\r', EXIT = 'b' };
 
 	coordX = 5;
 	coordY = 59;
@@ -1800,28 +1779,82 @@ bool shooter(playerField* field1, playerField* field2)
 		entering = _getch();
 
 		if (entering == UP) {
-			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
+
+			int step = rand() % 4;
+			if (step == 0) {
+				PlaySound(TEXT("musica\\pl_step1.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 1) {
+				PlaySound(TEXT("musica\\pl_step2.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 2) {
+				PlaySound(TEXT("musica\\pl_step3.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else {
+				PlaySound(TEXT("musica\\pl_step4.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+
 			if (coordX > 5) {
 				coordX -= 1;
 			}
 		}
 		else if (entering == DOWN) {
-			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			int step = rand() % 4;
+			if (step == 0) {
+				PlaySound(TEXT("musica\\pl_step1.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 1) {
+				PlaySound(TEXT("musica\\pl_step2.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 2) {
+				PlaySound(TEXT("musica\\pl_step3.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else {
+				PlaySound(TEXT("musica\\pl_step4.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
 			if (coordX < 14) {
 				coordX += 1;
 			}
 		}
 		else if (entering == RIGHT) {
-			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			int step = rand() % 4;
+			if (step == 0) {
+				PlaySound(TEXT("musica\\pl_step1.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 1) {
+				PlaySound(TEXT("musica\\pl_step2.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 2) {
+				PlaySound(TEXT("musica\\pl_step3.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else {
+				PlaySound(TEXT("musica\\pl_step4.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
 			if (coordY < 77) {
 				coordY += 2;
 			}
 		}
 		else if (entering == LEFT) {
-			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			int step = rand() % 4;
+			if (step == 0) {
+				PlaySound(TEXT("musica\\pl_step1.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 1) {
+				PlaySound(TEXT("musica\\pl_step2.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else if (step == 2) {
+				PlaySound(TEXT("musica\\pl_step3.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
+			else {
+				PlaySound(TEXT("musica\\pl_step4.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			}
 			if (coordY > 59) {
 				coordY -= 2;
 			}
+		}
+		else if (entering == EXIT) {
+			play_exit = false;
+			return false;
 		}
 		else if (entering == ENTER) {
 			PlaySound(TEXT("musica\\button.wav"), NULL, SND_FILENAME | SND_ASYNC);
@@ -1830,6 +1863,7 @@ bool shooter(playerField* field1, playerField* field2)
 				field2->field[coordX - 5][(coordY - 59) / 2] = 'X';
 				accountant(field2, coordX - 5, (coordY - 59) / 2);
 				system("CLS");
+				PlaySound(TEXT("musica\\explode3.wav"), NULL, SND_FILENAME | SND_ASYNC);
 				while (true) {
 					setCursorPos(8, 45);
 					std::cout << "Nice shoot!" << std::endl;
@@ -1843,6 +1877,16 @@ bool shooter(playerField* field1, playerField* field2)
 			else if (field2->field[coordX - 5][(coordY - 59) / 2] == '~') {
 				field2->field[coordX - 5][(coordY - 59) / 2] = '0';
 				system("CLS");
+				int step = rand() % 4;
+				if (step == 0) {
+					PlaySound(TEXT("musica\\flesh5.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				}
+				else if (step == 1) {
+					PlaySound(TEXT("musica\\flesh6.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				}
+				else {
+					PlaySound(TEXT("musica\\flesh7.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				}
 				while (true) {
 					setCursorPos(8, 45);
 					std::cout << "You miss!" << std::endl;
@@ -1874,17 +1918,18 @@ bool shooter(playerField* field1, playerField* field2)
 	}
 }
 
-//-производит проверку выйгрыша в игре (окончания)
+//+производит проверку выйгрыша в игре (окончания)
 bool winChecker(playerField* field1, playerField* field2)
 {
 	char cont;
 
 	if (field1->amount == 0) {
 		system("CLS");
+		setCursorPos(8, 40);
 		std::cout << field2->playerName << " is wictory!!!";
 
 		while (true) {
-			std::cout << "\n\t\t\t\t\t     press enter.";
+			std::cout << "\n\t\t\t\t\t     press enter";
 			cont = _getch();
 			if (cont == '\r') {
 				break;
@@ -1895,9 +1940,10 @@ bool winChecker(playerField* field1, playerField* field2)
 
 	if (field2->amount == 0) {
 		system("CLS");
+		setCursorPos(8, 40);
 		std::cout << field1->playerName << " is wictory!!!";
 		while (true) {
-			std::cout << "\n\t\t\t\t\t     press enter.";
+			std::cout << "\n\t\t\t\t\t     press enter";
 			cont = _getch();
 			if (cont == '\r') {
 				break;
@@ -1986,7 +2032,7 @@ void arealMarker(playerField* field, ship ship)
 	}
 }
 
-//-начальная заставка
+//+начальная заставка
 void intro()
 {
 

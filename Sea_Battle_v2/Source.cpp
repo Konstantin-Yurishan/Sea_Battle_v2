@@ -30,7 +30,7 @@ struct playerField {
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 void intro();
-playerField createPlayerField(); //создаёт экземпляр структуры, и заполняет в ней поле field
+void setPlayerField(playerField &); //создаёт экземпляр структуры, и заполняет в ней поле field
 bool checkArea(playerField*, int, int); //проверяет окресности переданной точки на переданном поле
 void fillFieldAutomatic(playerField*);  //автоматически заполняет поля
 void fillFieldManual(playerField*);  //заполнение полей вручную
@@ -62,9 +62,12 @@ int main()
 	structCursorInfo.bVisible = FALSE;
 	SetConsoleCursorInfo(handle, &structCursorInfo);
 
-	playerField field_1 = createPlayerField();
+	playerField field_1;
+	setPlayerField(field_1);
 	playerField* field_1_ptr = &field_1;
-	playerField field_2 = createPlayerField();
+
+	playerField field_2;
+	setPlayerField(field_2);
 	playerField* field_2_ptr = &field_2;
 
 	intro();
@@ -75,25 +78,24 @@ int main()
 }
 
 //+создание изначальных полей
-playerField createPlayerField()
+void setPlayerField(playerField & field)
 {
-	playerField newField;
+	
 
-	newField.field = new char* [10];
+	field.field = new char* [10];
 
 	for (int i = 0; i < 10; i++) {
-		newField.field[i] = new char[10];
+		field.field[i] = new char[10];
 	}
 
 	for (int i = 0; i < 10; i++) {
 		for (int c = 0; c < 10; c++) {
-			newField.field[i][c] = '~';
+			field.field[i][c] = '~';
 		}
 	}
 
-	newField.amount = 20;
+	field.amount = 20;
 
-	return newField;
 }
 
 //+проверка окресности поля
@@ -1305,8 +1307,8 @@ void mainMenu(playerField* field_1, playerField* field_2)
 			PlaySound(TEXT("musica\\menu_beep.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			while (exit) {
 
-				*field_1 = createPlayerField();
-				*field_2 = createPlayerField();
+				setPlayerField(*field_1);
+				setPlayerField(*field_2);
 				field_1->playerName = "Player1";
 				field_2->playerName = "Player2";
 				play_exit = true;
